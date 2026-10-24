@@ -23,7 +23,22 @@ prompt library built from your own questions.
 ---
 
 ### 1.
+What's contradictory or missing, not just in the company documents, but across Rook's wiki, its database, and the files in my repo?
 
 ### 2.
+based on this, what are the most reliable sources of the root issue given in simplified, brief bullet points
 
 ### 3.
+what actually went into the 4.2 release, and point me to real data or documentation that supports it
+
+### 4.
+Act as a senior incident investigator, analyze all available context and determine what underlying problem explains the largest percentage of reported symptoms.
+
+### 5.
+were there any recurring patterns across all support tickets related to this issue? at a high level, find common types of users affected, product configurations, and more
+
+### 6.
+give me the most common theme of issue among the support ticket and customer interviews
+
+### 7.
+give me this and the top issues you identified in a diagram that's easy to digest for a product manager
