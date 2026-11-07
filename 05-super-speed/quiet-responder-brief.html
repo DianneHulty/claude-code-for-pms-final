@@ -1,0 +1,437 @@
+<title>Back in Rotation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a working brief in one narrow reading column, the ask boxed up top,
+   then a wide two-surface walkthrough (handler console left, responder phone right). */
+:root{
+  --bg:#f3f5f7; --paper:#ffffff; --ink:#17212b; --muted:#5a6876; --line:#d7dee5;
+  --accent:#1f5f8b; --accent-soft:#e3eef6;
+  --quiet:#a2620a; --quiet-soft:#fbf0dc;
+  --miss:#b3372d; --miss-soft:#f9e4e1;
+  --ok:#2b7a4b; --ok-soft:#e1f2e7;
+  --device:#1d2730; --device-fg:#eef3f7; --device-muted:#9fb0bf;
+  --f-display:"Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11171d; --paper:#18212a; --ink:#e4eaf0; --muted:#98a7b5; --line:#2b3743;
+  --accent:#6fb0dd; --accent-soft:#1b3346;
+  --quiet:#e6a64a; --quiet-soft:#3a2b14;
+  --miss:#ef8478; --miss-soft:#3d1f1c;
+  --ok:#6fcf95; --ok-soft:#173225;
+  --device:#0a0f14; --device-fg:#eef3f7; --device-muted:#8697a6;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11171d; --paper:#18212a; --ink:#e4eaf0; --muted:#98a7b5; --line:#2b3743;
+  --accent:#6fb0dd; --accent-soft:#1b3346;
+  --quiet:#e6a64a; --quiet-soft:#3a2b14;
+  --miss:#ef8478; --miss-soft:#3d1f1c;
+  --ok:#6fcf95; --ok-soft:#173225;
+  --device:#0a0f14; --device-fg:#eef3f7; --device-muted:#8697a6;
+  color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 64px}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+.col{max-width:68ch}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:2.2rem;font-weight:700}
+h2{font-size:1.4rem;font-weight:700}
+h3{font-size:1.05rem;font-weight:700}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:.9rem}
+.lede{font-size:1.12rem}
+section{display:flex;flex-direction:column;gap:14px}
+ul,ol{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:8px}
+.mono{font-family:var(--f-mono);font-size:.88em}
+.src{font-size:.82rem;color:var(--muted)}
+
+/* The ask */
+.ask{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;max-width:76ch}
+.ask ol li b{font-weight:600}
+
+/* The four changes */
+.changes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.change{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.change .who{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.change p{font-size:.94rem}
+.change .phase{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;margin-top:auto}
+
+/* Walkthrough */
+.demo{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:18px}
+.steps{display:flex;flex-wrap:wrap;gap:8px}
+.steps button{font:500 .88rem var(--f-body);border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:7px 14px;cursor:pointer}
+.steps button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.steps button:focus-visible,.demo button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.narr{background:var(--accent-soft);border-radius:8px;padding:12px 14px;font-size:.95rem}
+.stage{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr);gap:20px;align-items:start}
+@media (max-width:760px){.stage{grid-template-columns:1fr}}
+.surface-label{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+
+.console{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
+.console-bar{display:flex;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:.8rem;color:var(--muted);background:var(--paper)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;padding:12px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.card-name{font-family:var(--f-display);font-weight:700;font-size:1.1rem}
+.pill{font-family:var(--f-mono);font-size:.7rem;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.pill.neutral{background:var(--bg);color:var(--muted)}
+.pill.quiet{background:var(--quiet-soft);color:var(--quiet)}
+.pill.miss{background:var(--miss-soft);color:var(--miss)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.busy{background:var(--accent-soft);color:var(--accent)}
+.stat{display:flex;align-items:baseline;gap:8px}
+.stat b{font-family:var(--f-mono);font-size:1.6rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.82rem;color:var(--muted)}
+.bars{display:flex;align-items:flex-end;gap:3px;height:34px}
+.bars i{flex:1;background:var(--line);border-radius:2px 2px 0 0;display:block}
+.bars i.hot{background:var(--accent)}
+.bars i.low{background:var(--quiet)}
+.why{font-size:.85rem;border-left:3px solid var(--quiet);padding-left:10px;display:flex;flex-direction:column;gap:6px}
+.why.ok{border-left-color:var(--ok)}
+.why.blank{border-left-color:var(--line);color:var(--muted);font-style:italic}
+.card .act{align-self:flex-start;font:600 .82rem var(--f-body);background:transparent;color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:6px 10px;cursor:pointer}
+
+.phone{width:100%;max-width:290px;margin:0 auto;background:var(--device);color:var(--device-fg);border-radius:30px;padding:14px 14px 22px;min-height:470px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.phone-top{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.72rem;color:var(--device-muted);padding:0 6px}
+.screen{flex:1;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.notif{background:rgba(255,255,255,.08);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:.88rem}
+.notif .app{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--device-muted)}
+.notif strong{font-size:1rem}
+.ring{height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
+.ring i{display:block;height:100%;background:var(--quiet)}
+.btns{display:flex;flex-direction:column;gap:8px}
+.btns button{font:600 .9rem var(--f-body);border:0;border-radius:10px;padding:10px;cursor:pointer}
+.btn-yes{background:#3d9a63;color:#fff}
+.btn-no{background:rgba(255,255,255,.14);color:var(--device-fg)}
+.btn-ghost{background:transparent;color:var(--device-muted);border:1px dashed rgba(255,255,255,.25)!important}
+.lock{text-align:center;color:var(--device-muted);font-size:.9rem;display:flex;flex-direction:column;gap:6px}
+.lock .clock{font-family:var(--f-display);font-size:3rem;color:var(--device-fg)}
+.tag{font-family:var(--f-mono);font-size:.7rem;color:var(--device-muted)}
+
+/* Open questions table */
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;font-size:.92rem;width:100%}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.owner{font-family:var(--f-mono);font-size:.82rem;color:var(--accent);white-space:nowrap}
+td.blocks{font-family:var(--f-mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+td.blocks.y{color:var(--miss)} td.blocks.n{color:var(--muted)}
+/* Chart */
+:root{--series-1:#2a78d6;--series-2:#eb6834;--grid:#e3e8ec}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--series-1:#3987e5;--series-2:#d95926;--grid:#26313b}}
+:root[data-theme="dark"]{--series-1:#3987e5;--series-2:#d95926;--grid:#26313b}
+.chartbox{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px 18px 12px;display:flex;flex-direction:column;gap:10px;position:relative}
+.legend{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:.88rem;color:var(--ink)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend svg{flex:none}
+.chart-scroll{overflow-x:auto}
+#chart{display:block;width:100%;min-width:520px;height:auto}
+#chart text{font-family:var(--f-body);fill:var(--muted);font-size:12px}
+#chart .lbl{fill:var(--ink);font-weight:600}
+#tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font-size:.82rem;padding:8px 10px;border-radius:6px;line-height:1.4;white-space:nowrap}
+details summary{cursor:pointer;color:var(--accent);font-size:.88rem}
+details table{margin-top:8px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="stack col">
+  <p class="eyebrow">Rook Dispatch · Brief for Helen · Draft</p>
+  <h1>Back in Rotation</h1>
+  <div class="meta"><span>From: Dispatch PM</span><span>7 Nov 2026</span><span>Proposal, nothing built</span></div>
+  <p class="lede">Since 4.2, four of our 16 responders have been almost entirely dropped from rotation, and nobody can see it happening, including the responders. This brief proposes what they and their handlers should experience instead, using Meteor Mite and Kip as the example.</p>
+</header>
+
+<div class="ask">
+  <p class="eyebrow">What I need from you</p>
+  <ol>
+    <li><b>Agreed on not shipping the quick fix.</b> There's also a second reason: we don't yet know which scoring numbers are running in production, so changing one could miss. Wen can confirm this week.</li>
+    <li><b>Make the policy call:</b> a missed ping should not count as a "no," and a bad stretch should fade over time unless the responder tells us they're away. Nobody has ever decided this. It has been an open question in the code since 2019.</li>
+    <li><b>Find it a release slot.</b> Phase 1 is small. Phase 2 needs engineering and design time and competes with Q4 work. It also overlaps Availability Confidence, one of the Q3 items squeezed out of 4.2 that is now overdue.</li>
+  </ol>
+  <p class="src">Meanwhile, at no cost: I'll contact the four affected handlers directly. None of them have filed tickets.</p>
+</div>
+
+<section class="col">
+  <p class="eyebrow">What happened</p>
+  <h2>A reliable responder went silent in three weeks</h2>
+  <p>Before 4.2, Meteor Mite was asked about 11 times a week, said yes about 70% of the time, and hadn't missed a ping since June. 4.2 cut the time to answer from 90 to 60 seconds. Mite missed 4 of 10 pings that week. The system counts a miss as a "no," and scores never recover on their own, so Mite moved to the back of the line and stopped being asked. By 31 Aug, Mite was getting 1 ping a week. The Gale, in the same area, was getting 21.</p>
+  <p>Kip, their handler (4 Sep): Mite keeps texting to ask if something is broken, while The Gale is exhausted. Kip has nothing to tell either of them. Farlight, The Undertow and Vesper followed the same path.</p>
+  <p><b>Why it matters beyond these four:</b> we bill per active responder, so a responder who stops getting work is likely to become one we stop billing for. Callouts nobody took have also roughly doubled since 4.2.</p>
+  <p><b>How sure we are:</b> the pattern in the data is strong. All four sank right after their release-week misses, and neither a seasonal dip nor past turn-downs explain who sank. The exact mechanism is unconfirmed until Wen answers, because scores rebuilt from the code don't fully match who sank.</p>
+  <p><b>How current this is:</b> our data stops on 6 Sep. We don't know whether the four are still this quiet two months later. I'll ask Ravi for October numbers by Fri 13 Nov.</p>
+  <p class="src">Source: pings table, 29 Jun to 6 Sep; Kip interview, 4 Sep. The billing risk is my inference and has not been measured.</p>
+</section>
+
+<section>
+  <div class="col stack">
+    <p class="eyebrow">The gap the changes would close</p>
+    <h2>About 120 pings never reached the four in the month after 4.2</h2>
+    <p>Weekly pings to Meteor Mite, Farlight, The Undertow and Vesper combined. The solid line is what happened. The dashed line is what we'd expect if the changes had been live on 12 Aug.</p>
+  </div>
+  <div class="chartbox">
+    <div class="legend" aria-hidden="true">
+      <span><svg width="22" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="var(--series-1)" stroke-width="2"/></svg>Actual pings (4.2 today)</span>
+      <span><svg width="22" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="var(--series-2)" stroke-width="2" stroke-dasharray="5 4"/></svg>Modeled with the four changes</span>
+    </div>
+    <div class="chart-scroll"><svg id="chart" viewBox="0 0 720 300" role="img" aria-label="Line chart. Pings to the four affected responders were about 49 a week until 4.2, then fell to 3 by the week of 31 August. The modeled line with the changes stays between 45 and 50 a week."></svg></div>
+    <div id="tip" hidden></div>
+    <p class="src">How the modeled line works: once misses stop moving the four down the line, they keep their pre-4.2 share of all pings (28%). Weekly totals are real, so the citywide drop in callouts is already included. This is an estimate, not a replay of the routing code. It's likely a bit high, because some responders would answer a check-in with "away." Ravi should check it.</p>
+    <details><summary>Show the numbers</summary>
+      <div class="tablewrap"><table id="chart-table"><thead><tr><th>Week of</th><th>All pings</th><th>Actual to the four</th><th>Modeled to the four</th></tr></thead><tbody></tbody></table></div>
+    </details>
+  </div>
+</section>
+
+<section>
+  <div class="col stack">
+    <p class="eyebrow">What we would build</p>
+    <h2>Four changes, each one something a person notices</h2>
+  </div>
+  <p class="col"><b>The trade-off:</b> each missed ping costs about 60 seconds before the callout moves on. In our data, the next responder takes it about 61 seconds after the miss. If misses stop moving people down the line, someone who keeps missing stays first and slows down real incidents. The check-in is what prevents that, so it's part of the fix, not an extra.</p>
+  <div class="changes">
+    <div class="change">
+      <span class="who">Responder</span>
+      <h3>A miss is not a no</h3>
+      <p>When a ping runs out, Mite's phone says the callout went to someone else, and that a miss doesn't count against Mite the way turning one down does.</p>
+      <p class="phase">Phase 1 · scoring rule + one message</p>
+    </div>
+    <div class="change">
+      <span class="who">Both</span>
+      <h3>A bad stretch fades</h3>
+      <p>A low score drifts back toward normal over time, so a bad week doesn't follow a responder forever.</p>
+      <p class="phase">Phase 1 · scoring rule</p>
+    </div>
+    <div class="change">
+      <span class="who">Responder</span>
+      <h3>A check-in instead of silence</h3>
+      <p>After a run of misses, Mite's phone asks "Still on tonight?" Yes puts Mite back in line straight away. No answer marks Mite as away, which Kip can see.</p>
+      <p class="phase">Phase 2 · also covers Availability Confidence, which was due in 4.2 and didn't ship</p>
+    </div>
+    <div class="change">
+      <span class="who">Handler</span>
+      <h3>The card says why</h3>
+      <p>Kip's console flags when a responder is being asked much less than usual, gives the reason, and shows who is covering for them.</p>
+      <p class="phase">Phase 2 · needs scores to be saved, which they aren't today</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="col stack">
+    <p class="eyebrow">Click through it</p>
+    <h2>Kip's console and Mite's phone, before and after</h2>
+    <p class="src">Example screens, not built. "Today" uses real numbers; later steps are illustrative.</p>
+  </div>
+  <div class="demo">
+    <div class="steps" role="group" aria-label="Walkthrough steps" id="steps"></div>
+    <p class="narr" id="narr"></p>
+    <div class="stage">
+      <div>
+        <p class="surface-label">Handler console · Kip</p>
+        <div class="console">
+          <div class="console-bar"><span>Coverage · Eastgate</span><span id="cbar-time"></span></div>
+          <div class="cards" id="cards"></div>
+        </div>
+      </div>
+      <div>
+        <p class="surface-label">Responder phone · Meteor Mite</p>
+        <div class="phone"><div class="phone-top"><span id="ptime"></span><span>Rook</span></div><div class="screen" id="screen"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="col">
+  <p class="eyebrow">How we'd know it worked</p>
+  <ul>
+    <li>The four are back to about 10 to 12 pings a week within 4 weeks of launch.</li>
+    <li>Callouts nobody took fall back to pre-4.2 levels.</li>
+    <li>Guardrail: The Gale and the other covering responders return to normal load, and overall acceptance (73% now) holds.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="col stack">
+    <p class="eyebrow">Before we build</p>
+    <h2>Four answers we need first</h2>
+  </div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Owner</th><th>Question</th><th>By</th></tr></thead>
+    <tbody>
+      <tr><td class="owner">Wen</td><td>Which scoring numbers are actually running? A score rebuilt from the code doesn't match who sank.</td><td class="blocks y">Fri 13 Nov</td></tr>
+      <tr><td class="owner">Wen</td><td>Why do most unanswered callouts stop after one ping, when the code is supposed to keep asking down the list?</td><td class="blocks y">Fri 13 Nov</td></tr>
+      <tr><td class="owner">Ravi</td><td>Are the four still this quiet? Our data stops on 6 Sep; we need October.</td><td class="blocks y">Fri 13 Nov</td></tr>
+      <tr><td class="owner">Marcus</td><td>Rough size of Phase 1 and Phase 2. Saving scores is new work.</td><td class="blocks y">Wed 18 Nov</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="col">If Wen can't make time this week, I'll need your help freeing it up. She's the only person who knows how routing works.</p>
+  <p class="col"><b>I'll come back with a recommendation and a size estimate by Fri 20 Nov.</b></p>
+  <p class="src">Also lined up: value tuning with Ravi, testing the phone messages with responders through Sofia, and Supply and Security reviews of the new "away" status. Not in scope: the 60-second wait itself (a separate decision) and cross-area cover (Q4).</p>
+</section>
+
+</div>
+
+<script>
+const BARS_MITE_TODAY=[11,12,10,11,12,11,10,4,2,1];
+const BARS_GALE_TODAY=[13,12,13,14,13,13,15,17,20,21];
+
+const scenes=[
+ {label:"Today (4.2)", time:"Mon 31 Aug · 23:40",
+  narr:"This is what Kip sees now. Mite's card shows 1 ping this week against a usual 11. The Gale shows 21. Nothing on screen explains it, so Kip tells Mite to hang in there. Mite's phone is just quiet.",
+  mite:{pill:["quiet","1 this week"],n:1,usual:"usual ~11",bars:BARS_MITE_TODAY,why:{cls:"blank",lines:["No explanation shown."]}},
+  gale:{pill:["busy","21 this week"],n:21,usual:"usual ~13",bars:BARS_GALE_TODAY,why:{cls:"blank",lines:["No explanation shown."]}},
+  phone:"lock-quiet"},
+ {label:"1 · A ping runs out", time:"Wed 12 Aug · 22:14",
+  narr:"With the change: release week, a callout arrives and Mite doesn't get to it in time. Try it on the phone. When it runs out, Mite is told what happened and that a miss isn't held against them like a no.",
+  mite:{pill:["neutral","asked first"],n:6,usual:"usual ~11",bars:[11,12,10,11,12,11,6],why:{cls:"ok",lines:["Still first in line for Eastgate callouts."]}},
+  gale:{pill:["neutral","normal"],n:9,usual:"usual ~13",bars:[13,12,13,14,13,13,9],why:{cls:"ok",lines:["Normal week."]}},
+  phone:"ping"},
+ {label:"2 · Four quiet days", time:"Sun 16 Aug · 21:05",
+  narr:"Mite missed a few more and hasn't taken anything in four days. Instead of sinking silently, Kip's card flags it with the reason and who is covering. Dispatch sends Mite one check-in.",
+  mite:{pill:["quiet","asked less"],n:2,usual:"usual ~11",bars:[11,12,10,11,12,11,10,2],why:{cls:"",lines:["Asked 2 times since Wed, usually ~6.","Why: 4 pings missed in a row (ran out of time).","Eastgate callouts are going to The Gale first.","Check-in sent to Mite 21:00. Waiting."]},act:"Message Mite"},
+  gale:{pill:["busy","covering"],n:17,usual:"usual ~13",bars:[13,12,13,14,13,13,15,17],why:{cls:"",lines:["Covering Mite's Eastgate callouts since Fri."]}},
+  phone:"checkin"},
+ {label:"3 · Mite answers", time:"Sun 16 Aug · 21:07",
+  narr:"Mite taps \"I'm on tonight.\" That answer is what restores standing, not a timer or a support ticket. Kip sees it straight away.",
+  mite:{pill:["ok","back in line"],n:2,usual:"usual ~11",bars:[11,12,10,11,12,11,10,2],why:{cls:"ok",lines:["Mite checked in at 21:07: on tonight.","Next Eastgate callout goes to Mite first."]}},
+  gale:{pill:["busy","covering"],n:17,usual:"usual ~13",bars:[13,12,13,14,13,13,15,17],why:{cls:"",lines:["Will hand Eastgate callouts back to Mite."]}},
+  phone:"checked-in"},
+ {label:"4 · Two weeks later", time:"Mon 31 Aug · 23:40",
+  narr:"Same week as \"Today\", with the change. Mite is back near a normal week. The Gale's load has eased. Kip's two cards tell the same story again.",
+  mite:{pill:["ok","normal"],n:10,usual:"usual ~11",bars:[11,12,10,11,12,11,10,6,9,10],why:{cls:"ok",lines:["Normal week. 1 miss, not counted as a no."]}},
+  gale:{pill:["neutral","normal"],n:14,usual:"usual ~13",bars:[13,12,13,14,13,13,15,17,15,14],why:{cls:"ok",lines:["Normal week."]}},
+  phone:"lock-ok"}
+];
+
+let cur=0, phoneSub=null, timer=null;
+
+function bars(arr){
+  const max=22;
+  return '<div class="bars" aria-hidden="true">'+arr.map((v,i)=>{
+    const last=i===arr.length-1;
+    const cls=last?(v<6?'low':'hot'):'';
+    return `<i class="${cls}" style="height:${Math.max(4,v/max*100)}%"></i>`}).join('')+'</div>';
+}
+function card(name,d){
+  return `<div class="card">
+    <div class="card-head"><span class="card-name">${name}</span><span class="pill ${d.pill[0]}">${d.pill[1]}</span></div>
+    <div class="stat"><b>${d.n}</b><span>pings this week · ${d.usual}</span></div>
+    ${bars(d.bars)}
+    <div class="why ${d.why.cls}">${d.why.lines.map(l=>`<span>${l}</span>`).join('')}</div>
+    ${d.act?`<button class="act" type="button" id="act-${name.replace(/\s/g,'')}">${d.act}</button>`:''}
+  </div>`;
+}
+function phone(kind){
+  const s=document.getElementById('screen');
+  clearInterval(timer);
+  if(kind==='lock-quiet'){
+    s.innerHTML=`<div class="lock"><span class="clock">23:40</span><span>No callouts</span><span class="tag">Last ping: 4 days ago</span></div>`;
+  } else if(kind==='lock-ok'){
+    s.innerHTML=`<div class="lock"><span class="clock">23:40</span><span>On tonight · Eastgate</span><span class="tag">10 callouts this week</span></div>`;
+  } else if(kind==='ping'){
+    if(phoneSub==='missed'){
+      s.innerHTML=`<div class="notif"><span class="app">Rook Dispatch · 22:15</span><strong>You missed a callout</strong><span>Warehouse fire, Eastgate. It went to The Gale after 60 seconds.</span><span>A miss doesn't count against you the way turning one down does. You're still first in line here.</span></div>
+      <div class="btns"><button class="btn-no" type="button" id="p-reset">Replay the ping</button></div>`;
+    } else if(phoneSub==='taken'){
+      s.innerHTML=`<div class="notif"><span class="app">Rook Dispatch</span><strong>You're on it</strong><span>Warehouse fire, Eastgate. Kip has been told.</span></div><div class="btns"><button class="btn-no" type="button" id="p-reset">Replay the ping</button></div>`;
+    } else if(phoneSub==='declined'){
+      s.innerHTML=`<div class="notif"><span class="app">Rook Dispatch</span><strong>Passed on</strong><span>Sent to the next responder. Thanks for answering.</span></div><div class="btns"><button class="btn-no" type="button" id="p-reset">Replay the ping</button></div>`;
+    } else {
+      let left=60;
+      s.innerHTML=`<div class="notif"><span class="app">Rook Dispatch · callout</span><strong>Warehouse fire, Eastgate</strong><span>6 min away · needs structural-entry</span><div class="ring"><i id="ringbar" style="width:100%"></i></div><span class="tag" id="ringtxt">60s to answer</span></div>
+      <div class="btns"><button class="btn-yes" type="button" id="p-take">Take it</button><button class="btn-no" type="button" id="p-no">Not this one</button><button class="btn-no btn-ghost" type="button" id="p-run">Let it run out</button></div>`;
+      timer=setInterval(()=>{left-=1;const b=document.getElementById('ringbar'),t=document.getElementById('ringtxt');
+        if(!b){clearInterval(timer);return}
+        b.style.width=(left/60*100)+'%';t.textContent=left+'s to answer';
+        if(left<=0){phoneSub='missed';render()}},1000);
+    }
+  } else if(kind==='checkin'){
+    s.innerHTML=`<div class="notif"><span class="app">Rook Dispatch · 21:00</span><strong>Still on tonight?</strong><span>You've missed a few callouts in a row. If you're available, we'll put you back first in line for Eastgate.</span><span class="tag">No answer by 23:00 sets you as away until you say otherwise.</span></div>
+    <div class="btns"><button class="btn-yes" type="button" id="p-on">I'm on tonight</button><button class="btn-no" type="button" id="p-away">I'm away for now</button></div>`;
+  } else if(kind==='checked-in'){
+    s.innerHTML=`<div class="notif"><span class="app">Rook Dispatch</span><strong>You're back in line</strong><span>The next Eastgate callout comes to you first. Kip can see you're on.</span></div>`;
+  } else if(kind==='away'){
+    s.innerHTML=`<div class="notif"><span class="app">Rook Dispatch</span><strong>Set to away</strong><span>We won't ping you until you switch back on. Kip can see you're away, so nobody wonders why it's quiet.</span></div><div class="btns"><button class="btn-no" type="button" id="p-back">Back to the question</button></div>`;
+  }
+  const on=(id,fn)=>{const e=document.getElementById(id);if(e)e.onclick=fn};
+  on('p-run',()=>{phoneSub='missed';render()});
+  on('p-take',()=>{phoneSub='taken';render()});
+  on('p-no',()=>{phoneSub='declined';render()});
+  on('p-reset',()=>{phoneSub=null;render()});
+  on('p-on',()=>go(3));
+  on('p-away',()=>{phone('away')});
+  on('p-back',()=>{phone('checkin')});
+}
+function render(){
+  const sc=scenes[cur];
+  document.getElementById('narr').textContent=sc.narr;
+  document.getElementById('cbar-time').textContent=sc.time;
+  document.getElementById('ptime').textContent=sc.time.split('· ')[1];
+  document.getElementById('cards').innerHTML=card('Meteor Mite',sc.mite)+card('The Gale',sc.gale);
+  const a=document.getElementById('act-MeteorMite');
+  if(a)a.onclick=()=>{a.textContent='Message drafted to Mite';a.disabled=true};
+  [...document.querySelectorAll('#steps button')].forEach((b,i)=>b.setAttribute('aria-pressed',i===cur));
+  phone(sc.phone);
+}
+function go(i){cur=i;phoneSub=null;render()}
+document.getElementById('steps').innerHTML=scenes.map((s,i)=>`<button type="button" data-i="${i}">${s.label}</button>`).join('');
+document.querySelectorAll('#steps button').forEach(b=>b.onclick=()=>go(+b.dataset.i));
+render();
+
+/* Chart: real weekly pings from the pings table; modeled = pre-4.2 share x real weekly total */
+(function(){
+  const weeks=["29 Jun","6 Jul","13 Jul","20 Jul","27 Jul","3 Aug","10 Aug","17 Aug","24 Aug","31 Aug"];
+  const total=[172,170,174,176,170,172,177,158,162,165];
+  const actual=[49,48,48,50,50,49,43,16,6,3];
+  const share=actual.slice(0,6).reduce((a,b)=>a+b)/total.slice(0,6).reduce((a,b)=>a+b);
+  const model=total.map((t,i)=>i<6?actual[i]:Math.round(t*share));
+  const W=720,H=300,L=44,R=150,T=18,B=36,pw=W-L-R,ph=H-T-B,ymax=60;
+  const x=i=>L+pw*i/(weeks.length-1), y=v=>T+ph*(1-v/ymax);
+  const ns="http://www.w3.org/2000/svg", svg=document.getElementById('chart');
+  const el=(n,a,txt)=>{const e=document.createElementNS(ns,n);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;svg.appendChild(e);return e};
+  [0,20,40,60].forEach(v=>{el('line',{x1:L,x2:L+pw,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});el('text',{x:L-8,y:y(v)+4,'text-anchor':'end'},v)});
+  weeks.forEach((w,i)=>{if(i%3===0||i===weeks.length-1)el('text',{x:x(i),y:H-12,'text-anchor':'middle'},w)});
+  const shipX=x(6+2/7);
+  el('line',{x1:shipX,x2:shipX,y1:T,y2:T+ph,stroke:'var(--muted)','stroke-width':1});
+  el('text',{x:shipX-6,y:T+12,'text-anchor':'end'},'4.2 ships, 12 Aug');
+  let gap=`M${x(6)},${y(model[6])}`;
+  for(let i=7;i<10;i++)gap+=` L${x(i)},${y(model[i])}`;
+  for(let i=9;i>=6;i--)gap+=` L${x(i)},${y(actual[i])}`;
+  el('path',{d:gap+'Z',fill:'var(--series-2)','fill-opacity':.12,stroke:'none'});
+  const sum=model.slice(6).reduce((a,b)=>a+b)-actual.slice(6).reduce((a,b)=>a+b);
+  el('text',{x:x(8),y:y(26),'text-anchor':'middle',class:'lbl'},`≈${sum} pings lost`);
+  const path=(arr,from)=>arr.map((v,i)=>i<from?null:`${i===from?'M':'L'}${x(i)},${y(v)}`).filter(Boolean).join(' ');
+  el('path',{d:path(model,5),fill:'none',stroke:'var(--series-2)','stroke-width':2,'stroke-dasharray':'6 5','stroke-linecap':'round'});
+  el('path',{d:path(actual,0),fill:'none',stroke:'var(--series-1)','stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'});
+  el('circle',{cx:x(9),cy:y(actual[9]),r:4.5,fill:'var(--series-1)',stroke:'var(--paper)','stroke-width':2});
+  el('circle',{cx:x(9),cy:y(model[9]),r:4.5,fill:'var(--series-2)',stroke:'var(--paper)','stroke-width':2});
+  el('text',{x:x(9)+10,y:y(model[9])+4,class:'lbl'},`${model[9]} a week, modeled`);
+  el('text',{x:x(9)+10,y:y(actual[9])+4,class:'lbl'},`${actual[9]} a week, actual`);
+  const cross=el('line',{x1:0,x2:0,y1:T,y2:T+ph,stroke:'var(--muted)','stroke-width':1,visibility:'hidden'});
+  const tip=document.getElementById('tip'), box=svg.parentElement.parentElement;
+  const hit=el('rect',{x:L-10,y:T,width:pw+20,height:ph,fill:'transparent'});
+  function show(evt){
+    const r=svg.getBoundingClientRect(), sx=(evt.clientX-r.left)*W/r.width;
+    const i=Math.max(0,Math.min(weeks.length-1,Math.round((sx-L)/pw*(weeks.length-1))));
+    cross.setAttribute('x1',x(i));cross.setAttribute('x2',x(i));cross.setAttribute('visibility','visible');
+    tip.innerHTML=`<b>Week of ${weeks[i]}</b><br>Actual: ${actual[i]}`+(i>=6?`<br>Modeled: ${model[i]}`:'');
+    tip.hidden=false;
+    const br=box.getBoundingClientRect(), px=r.left-br.left+x(i)*r.width/W;
+    tip.style.left=Math.min(px+12,br.width-tip.offsetWidth-8)+'px';
+    tip.style.top=(r.top-br.top+20)+'px';
+  }
+  hit.addEventListener('pointermove',show);
+  hit.addEventListener('pointerleave',()=>{tip.hidden=true;cross.setAttribute('visibility','hidden')});
+  document.querySelector('#chart-table tbody').innerHTML=weeks.map((w,i)=>`<tr><td>${w}</td><td>${total[i]}</td><td>${actual[i]}</td><td>${i>=6?model[i]:'–'}</td></tr>`).join('');
+})();
+</script>

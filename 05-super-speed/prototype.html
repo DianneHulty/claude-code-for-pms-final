@@ -1,0 +1,1353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Back in Rotation Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: prototype controls band on top; below, the product itself:
+   Kip's desktop console window (left) and Meteor Mite's phone (right). */
+:root{
+  --bg:#e9edf1; --paper:#ffffff; --ink:#17212b; --muted:#5a6876; --line:#d7dee5;
+  --chrome:#20303d; --chrome-fg:#dbe4ec; --chrome-muted:#8ea0b0;
+  --accent:#1f5f8b; --accent-soft:#e3eef6;
+  --quiet:#a2620a; --quiet-soft:#fbf0dc;
+  --miss:#b3372d; --miss-soft:#f9e4e1;
+  --ok:#2b7a4b; --ok-soft:#e1f2e7;
+  --proto:#6a4fb3; --proto-soft:#efeafb;
+  --device:#1d2730; --device-fg:#eef3f7; --device-muted:#9fb0bf;
+  --f-display:"Familjen Grotesk","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0e1419; --paper:#18212a; --ink:#e4eaf0; --muted:#98a7b5; --line:#2b3743;
+  --chrome:#0a1016; --chrome-fg:#dbe4ec; --chrome-muted:#7c8d9c;
+  --accent:#6fb0dd; --accent-soft:#1b3346;
+  --quiet:#e6a64a; --quiet-soft:#3a2b14;
+  --miss:#ef8478; --miss-soft:#3d1f1c;
+  --ok:#6fcf95; --ok-soft:#173225;
+  --proto:#b4a2ef; --proto-soft:#2a2342;
+  --device:#05090c; --device-fg:#eef3f7; --device-muted:#8697a6;
+  color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);padding:20px max(16px,env(safe-area-inset-left)) 40px}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.page{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+
+/* Prototype controls (not part of the product) */
+.proto{background:var(--proto-soft);border:1px dashed var(--proto);border-radius:10px;padding:12px 14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.proto .tag{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--proto);font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--proto);border-radius:999px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--ink);padding:6px 14px;font-size:.88rem}
+.seg button[aria-pressed="true"]{background:var(--proto);color:var(--paper)}
+.pbtn{border:1px solid var(--proto);background:var(--paper);color:var(--ink);border-radius:8px;padding:6px 12px;font-size:.88rem;font-weight:600}
+.pbtn.primary{background:var(--proto);color:var(--paper)}
+.pbtn:disabled{opacity:.45;cursor:not-allowed}
+.hint{flex:1 1 260px;font-size:.88rem;color:var(--ink);min-width:0}
+
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start}
+@media (max-width:980px){.stage{grid-template-columns:1fr}}
+.where{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+
+/* Desktop console window */
+.window{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 8px 30px rgba(10,20,30,.12)}
+.titlebar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--chrome);color:var(--chrome-muted);font-size:.78rem}
+.dots{display:flex;gap:6px}.dots i{width:10px;height:10px;border-radius:50%;background:#46596a;display:block}
+.titlebar .url{flex:1;text-align:center;font-family:var(--f-mono)}
+.appbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;background:var(--chrome);color:var(--chrome-fg);border-top:1px solid #2e4252;flex-wrap:wrap}
+.brand{font-family:var(--f-display);font-weight:700;font-size:1.05rem}
+.brand small{font-family:var(--f-body);font-weight:400;color:var(--chrome-muted);margin-left:8px;font-size:.8rem}
+.who{display:flex;gap:14px;align-items:center;font-size:.82rem;color:var(--chrome-muted)}
+.who b{color:var(--chrome-fg);font-family:var(--f-mono);font-weight:600}
+.app{display:grid;grid-template-columns:150px minmax(0,1fr);min-height:560px}
+@media (max-width:640px){.app{grid-template-columns:1fr}.nav{flex-direction:row;overflow-x:auto}}
+.nav{border-right:1px solid var(--line);padding:12px 8px;display:flex;flex-direction:column;gap:2px;background:var(--bg)}
+.nav button{border:0;background:transparent;color:var(--muted);text-align:left;padding:8px 10px;border-radius:6px;font-size:.9rem;white-space:nowrap}
+.nav button.on{background:var(--paper);color:var(--ink);font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}
+@media (max-width:640px){.nav{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line)}}
+.main{padding:16px;display:flex;flex-direction:column;gap:16px;min-width:0;position:relative}
+.main h2{font:700 1.15rem var(--f-display);margin:0}
+.sub{font-size:.85rem;color:var(--muted);margin:0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.card{text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;color:var(--ink);min-width:0;transition:border-color .15s, box-shadow .15s}
+.card:hover{border-color:var(--accent);box-shadow:0 2px 10px rgba(31,95,139,.12)}
+.card.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.card-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.cname{font:700 1.08rem var(--f-display)}
+.pill{font-family:var(--f-mono);font-size:.7rem;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.pill.neutral{background:var(--bg);color:var(--muted)}
+.pill.quiet{background:var(--quiet-soft);color:var(--quiet)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.busy{background:var(--accent-soft);color:var(--accent)}
+.pill.away{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.stat{display:flex;align-items:baseline;gap:8px}
+.stat b{font:600 1.7rem var(--f-mono);font-variant-numeric:tabular-nums}
+.stat span{font-size:.8rem;color:var(--muted)}
+.bars{display:flex;align-items:flex-end;gap:3px;height:34px}
+.bars i{flex:1;background:var(--line);border-radius:2px 2px 0 0;display:block}
+.bars i.now{background:var(--accent)}
+.bars i.now.low{background:var(--quiet)}
+.why{font-size:.84rem;border-left:3px solid var(--quiet);padding-left:10px;display:flex;flex-direction:column;gap:4px}
+.why.ok{border-left-color:var(--ok)}
+.why.plain{border-left-color:var(--line);color:var(--muted)}
+.more{align-self:flex-start;border:0;background:transparent;padding:0;font-size:.78rem;color:var(--accent);font-weight:600}
+.card{cursor:pointer}
+.acts{border-top:1px dashed var(--line);padding-top:10px;display:flex;flex-direction:column;gap:8px;cursor:default}
+.acts-label{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.arow{display:flex;flex-wrap:wrap;gap:6px}
+.abtn{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:5px 10px;font-size:.8rem;font-weight:600}
+.abtn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.abtn.go{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.abtn.go:hover{color:var(--paper)}
+.abtn:disabled{opacity:.45;cursor:not-allowed}
+.live{background:var(--quiet-soft);color:var(--ink);border-radius:6px;padding:8px 10px;display:flex;flex-direction:column;gap:8px;font-size:.84rem}
+.live b{font-family:var(--f-mono);color:var(--quiet)}
+.confirm{font-size:.8rem;color:var(--muted)}
+.none{font-size:.8rem;color:var(--muted);font-style:italic}
+.feed{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.feed h3{margin:0;padding:8px 12px;font:600 .8rem var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--bg);border-bottom:1px solid var(--line)}
+.feed ol{list-style:none;margin:0;padding:0;max-height:210px;overflow:auto}
+.feed li{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:.86rem}
+.feed li:last-child{border-bottom:0}
+.feed time{font-family:var(--f-mono);font-size:.78rem;color:var(--muted)}
+.feed li.new{animation:flash 1.2s ease-out}
+@keyframes flash{from{background:var(--accent-soft)}to{background:transparent}}
+.feed .empty{color:var(--muted);font-style:italic}
+
+/* Drawer */
+.drawer{position:absolute;top:0;right:0;bottom:0;width:min(360px,100%);background:var(--paper);border-left:1px solid var(--line);box-shadow:-8px 0 24px rgba(10,20,30,.12);padding:16px;display:flex;flex-direction:column;gap:12px;overflow:auto}
+.drawer h3{margin:0;font:700 1.05rem var(--f-display)}
+.drawer .x{align-self:flex-end;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:4px 10px;font-size:.82rem}
+.dl{display:flex;flex-direction:column;gap:6px;font-size:.86rem;margin:0;padding:0;list-style:none}
+.dl li{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--line);padding-bottom:4px}
+.dl li span:last-child{font-family:var(--f-mono);font-size:.8rem}
+.o-taken{color:var(--ok)} .o-missed{color:var(--miss)} .o-declined{color:var(--quiet)}
+.order{margin:0;padding-left:1.3em;font-size:.88rem;display:flex;flex-direction:column;gap:4px}
+.kbtn{align-self:flex-start;border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:6px;padding:6px 12px;font-weight:600;font-size:.85rem}
+.kbtn.solid{background:var(--accent);color:var(--paper)}
+.note{font-size:.82rem;color:var(--muted)}
+
+/* Phone */
+.phone{width:100%;max-width:300px;margin:0 auto;background:var(--device);color:var(--device-fg);border-radius:36px;padding:12px 14px 24px;min-height:560px;display:flex;flex-direction:column;gap:10px;box-shadow:0 12px 34px rgba(0,0,0,.25);border:3px solid #3a4652}
+.notch{width:90px;height:18px;border-radius:0 0 12px 12px;background:#000;margin:-12px auto 0}
+.ptop{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.72rem;color:var(--device-muted);padding:0 8px}
+.screen{flex:1;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.lock{text-align:center;color:var(--device-muted);display:flex;flex-direction:column;gap:6px;align-items:center}
+.clock{font:500 3.2rem var(--f-display);color:var(--device-fg);line-height:1}
+.date{font-size:.85rem}
+.status{margin-top:18px;font-size:.9rem;color:var(--device-fg)}
+.small{font-family:var(--f-mono);font-size:.7rem;color:var(--device-muted)}
+.notif{background:rgba(255,255,255,.09);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px;font-size:.9rem}
+.notif .app-n{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--device-muted)}
+.notif strong{font-size:1.02rem}
+.ring{height:6px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden}
+.ring i{display:block;height:100%;background:#e6a64a;transition:width .14s linear}
+.pbtns{display:flex;flex-direction:column;gap:8px}
+.pbtns button{border:0;border-radius:12px;padding:11px;font-weight:600;font-size:.92rem}
+.yes{background:#3d9a63;color:#fff}
+.no{background:rgba(255,255,255,.15);color:var(--device-fg)}
+.ghost{background:transparent!important;color:var(--device-muted)!important;border:1px dashed rgba(255,255,255,.3)!important}
+.ghost small{display:block;font-weight:400;font-size:.7rem}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;font-size:.88rem;max-width:min(520px,calc(100% - 32px));box-shadow:0 6px 20px rgba(0,0,0,.25)}
+/* Phone: full-screen callout alert that escalates */
+.alertscr{flex:1;border-radius:24px;padding:14px 14px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;
+  background:radial-gradient(circle at 50% 28%,#8a4a14 0%,#3a1c0a 55%,#1a0d05 100%);transition:background .4s}
+.alertscr.stage-2{background:radial-gradient(circle at 50% 28%,#c2651a 0%,#5a2a0c 55%,#200f05 100%);animation:flash 1.1s infinite}
+.alertscr.stage-3{background:radial-gradient(circle at 50% 28%,#d23a2a 0%,#6a1810 55%,#240806 100%);animation:flash .6s infinite}
+@keyframes flash{0%,100%{filter:brightness(1)}50%{filter:brightness(1.35)}}
+.a-top{width:100%;display:flex;justify-content:space-between;align-items:center}
+.a-badge{font:700 .72rem var(--f-mono);letter-spacing:.12em;text-transform:uppercase;background:#ffb547;color:#2a1305;border-radius:999px;padding:3px 10px}
+.a-dnd{font:.64rem var(--f-mono);color:#f3d9c0;opacity:.8}
+.a-timer{position:relative;width:132px;height:132px;display:grid;place-items:center;margin-top:4px}
+.a-timer svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.a-timer .trk{fill:none;stroke:rgba(255,255,255,.15);stroke-width:8}
+.a-timer .prog{fill:none;stroke:#ffb547;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .15s linear}
+.stage-3 .a-timer .prog{stroke:#fff}
+.pulse{position:absolute;inset:6px;border-radius:50%;border:2px solid rgba(255,181,71,.6);animation:pulse 1.6s ease-out infinite}
+.pulse.p2{animation-delay:.8s}
+.stage-3 .pulse{border-color:rgba(255,255,255,.7);animation-duration:.9s}
+@keyframes pulse{from{transform:scale(1);opacity:.9}to{transform:scale(1.45);opacity:0}}
+.a-num{position:relative;display:flex;flex-direction:column;line-height:1}
+.a-num b{font:700 2.8rem var(--f-display);color:#fff;font-variant-numeric:tabular-nums}
+.a-num small{font:.7rem var(--f-mono);color:#f3d9c0}
+.a-title{font:700 1.45rem/1.15 var(--f-display);color:#fff;text-wrap:balance}
+.a-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.a-chips span{background:rgba(255,255,255,.14);color:#fff;border-radius:999px;padding:3px 10px;font-size:.78rem;font-weight:600}
+.a-take{width:100%;margin-top:auto;border:0;border-radius:20px;height:64px;background:#2fb36a;color:#fff;font:700 1.25rem var(--f-display);box-shadow:0 0 0 4px rgba(47,179,106,.3)}
+.a-row{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.a-row button{border:0;border-radius:14px;height:46px;background:rgba(255,255,255,.16);color:#fff;font-weight:700;font-size:.95rem}
+.a-row button:disabled{opacity:.35;cursor:not-allowed}
+.a-ladder{display:flex;justify-content:center;gap:12px;font:.64rem var(--f-mono);color:rgba(255,255,255,.5)}
+.a-ladder span{display:flex;align-items:center;gap:4px}
+.a-ladder i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);display:block}
+.a-ladder .on{color:#fff}.a-ladder .on i{background:#ffb547}
+.phone.buzz{animation:buzz 1.4s infinite}
+.phone.buzz.s2{animation-duration:.9s}.phone.buzz.s3{animation-duration:.55s}
+@keyframes buzz{0%,30%,100%{transform:translate(0)}5%{transform:translate(-3px,0) rotate(-.6deg)}10%{transform:translate(3px,0) rotate(.6deg)}15%{transform:translate(-3px,0) rotate(-.6deg)}20%{transform:translate(3px,0) rotate(.6deg)}25%{transform:translate(-2px,0)}}
+
+/* Phone: simple result screens (icon, title, a few words) */
+.scr{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:8px 4px}
+.ic{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;margin-bottom:4px}
+.ic svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.ic.good{background:rgba(47,179,106,.2);color:#5fd394}
+.ic.warn{background:rgba(255,181,71,.18);color:#ffb547}
+.ic.info{background:rgba(111,176,221,.2);color:#8cc4ea}
+.ic.calm{background:rgba(255,255,255,.1);color:var(--device-fg)}
+.s-title{font:700 1.35rem var(--f-display);color:var(--device-fg)}
+.s-sub{font-size:.95rem;color:var(--device-fg)}
+.s-note{font:.72rem var(--f-mono);color:var(--device-muted)}
+.pbtns .big{height:54px;font-size:1.02rem;border-radius:16px}
+
+/* Handler console additions */
+.nightbtn{border:1px solid #46596a;background:transparent;color:var(--chrome-fg);border-radius:999px;padding:3px 10px;font-size:.76rem}
+.nightbtn[aria-pressed="true"]{background:#46596a}
+.window.night{--paper:#151d24;--bg:#0f151b;--ink:#dbe4ec;--muted:#8a9bab;--line:#26323d;
+  --accent:#6fb0dd;--accent-soft:#1a3043;--quiet:#e6a64a;--quiet-soft:#33260f;--ok:#6fcf95;--ok-soft:#14301f;--miss:#ef8478;--miss-soft:#3a1d1a;color:var(--ink)}
+.needs{display:flex;flex-direction:column;gap:8px}
+.needs:empty{display:none}
+.needs-h{font:600 .74rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.need{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.need::before{content:"";width:8px;height:100%;min-height:28px;border-radius:4px;background:var(--quiet)}
+.need.hi::before{background:var(--miss)} .need.info::before{background:var(--accent)}
+.need p{margin:0;font-size:.86rem} .need p b{font-weight:600}
+.need .arow{justify-content:flex-end}
+@media (max-width:640px){.need{grid-template-columns:8px minmax(0,1fr)}.need .arow{grid-column:2;justify-content:flex-start}}
+.line{display:flex;flex-direction:column;gap:2px}
+.line b{font:700 .98rem var(--f-display)}
+.line span{font-size:.8rem;color:var(--muted)}
+.tonight{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:.74rem;color:var(--muted)}
+.tonight i{width:12px;height:12px;border-radius:50%;display:inline-block;border:2px solid var(--paper);box-shadow:0 0 0 1px var(--line)}
+.tonight i.taken{background:var(--ok)} .tonight i.declined{background:var(--quiet)} .tonight i.missed{background:var(--miss)}
+.tonight i.kip{background:var(--accent)} .tonight i.flagged{background:var(--line)}
+.tonight .lbl{margin-right:4px}
+.tone{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted)}
+.rank{width:100%;border-collapse:collapse;font-size:.82rem}
+.rank th,.rank td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line)}
+.rank th{font:600 .66rem var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.ev{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:.82rem}
+.ev li{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding-bottom:3px}
+.ev .d{font-family:var(--f-mono);font-size:.76rem}
+.ev .d.up{color:var(--ok)} .ev .d.down{color:var(--miss)} .ev .d.zero{color:var(--muted)}
+
+/* Tabs */
+.tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:transparent;color:var(--muted);padding:10px 14px;font-weight:600;font-size:.92rem;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* Both phones tab */
+.duo-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.duo-bar h2{margin:0;font:700 1.2rem var(--f-display);flex:1 1 220px}
+.duo{display:grid;grid-template-columns:300px minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:1060px){.duo{grid-template-columns:1fr 1fr}.duo-mid{grid-column:1/-1;order:3}}
+@media (max-width:680px){.duo{grid-template-columns:1fr}}
+.duo-col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.duo-col .phone{min-height:520px}
+.duo-col .pbtn{align-self:center}
+.standing{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.standing .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.standing .nm{font:700 1rem var(--f-display)}
+.standing .val{font:600 1.25rem var(--f-mono);font-variant-numeric:tabular-nums}
+.meter{height:10px;border-radius:5px;background:var(--bg);position:relative;overflow:hidden}
+.meter i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:5px;transition:width .4s}
+.meter b{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--muted);opacity:.5}
+.delta{font-family:var(--f-mono);font-size:.78rem;border-radius:999px;padding:2px 8px;align-self:flex-start}
+.delta.up{background:var(--ok-soft);color:var(--ok)}
+.delta.down{background:var(--miss-soft);color:var(--miss)}
+.delta.zero{background:var(--bg);color:var(--muted)}
+.standing .meta2{font-size:.8rem;color:var(--muted)}
+.duo-mid{display:flex;flex-direction:column;gap:14px;min-width:0}
+.queue{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:.88rem}
+.queue .q{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:4px 10px;display:inline-flex;gap:6px;align-items:center}
+.queue .q.now{border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+.queue .q.out{opacity:.5;text-decoration:line-through}
+.queue .q small{font-family:var(--f-mono);color:var(--muted)}
+.queue .arr{color:var(--muted)}
+.chain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0}
+.chain li{position:relative;padding:0 0 12px 22px;font-size:.88rem}
+.chain li::before{content:"";position:absolute;left:5px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--line)}
+.chain li::after{content:"";position:absolute;left:9px;top:16px;bottom:0;width:1px;background:var(--line)}
+.chain li:last-child::after{display:none}
+.chain li.c-ok::before{background:var(--ok)} .chain li.c-no::before{background:var(--quiet)} .chain li.c-miss::before{background:var(--miss)} .chain li.c-ask::before{background:var(--accent)}
+.chain time{font-family:var(--f-mono);font-size:.74rem;color:var(--muted);margin-right:6px}
+.rules{width:100%;border-collapse:collapse;font-size:.82rem}
+.rules th,.rules td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.rules th{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.rules tr.cur td{background:var(--accent-soft)}
+.rules td:first-child{font-weight:600;white-space:nowrap}
+.hist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:.84rem;max-height:160px;overflow:auto}
+.hist li{border-bottom:1px dashed var(--line);padding-bottom:4px}
+
+/* Phone trouble: report form + patterns screen */
+.rform{display:flex;flex-direction:column;gap:8px}
+.chips{display:flex;flex-direction:column;gap:4px}
+.chip{text-align:left;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:6px;padding:6px 10px;font-size:.8rem}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+.chip .sug{font-family:var(--f-mono);font-size:.66rem;color:var(--accent);margin-left:6px}
+.diag{background:var(--bg);border-radius:6px;padding:8px 10px;font-family:var(--f-mono);font-size:.72rem;color:var(--muted);display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px}
+.diag b{color:var(--ink);font-weight:600}
+.diag .bad{color:var(--miss)}
+.navbadge{display:inline-block;margin-left:6px;background:var(--miss);color:var(--paper);border-radius:999px;font-size:.68rem;padding:0 6px;font-weight:600}
+.example{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;color:var(--proto);border:1px dashed var(--proto);border-radius:6px;padding:4px 8px;align-self:flex-start}
+.alert{border:1px solid var(--miss);background:var(--miss-soft);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:.88rem}
+.alert strong{font-family:var(--f-display);font-size:1rem}
+.alert .route{font-size:.8rem;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:1100px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.tile b{font:600 1.5rem var(--f-mono);font-variant-numeric:tabular-nums}
+.tile span{font-size:.78rem;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.panel{border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.panel h3{margin:0;font:600 .78rem var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.hbar{display:grid;grid-template-columns:minmax(0,1fr) 34px;gap:2px 8px;align-items:center;font-size:.82rem}
+.hbar .track{grid-column:1/3;height:8px;background:var(--bg);border-radius:4px;overflow:hidden}
+.hbar .track i{display:block;height:100%;background:var(--accent);border-radius:0 4px 4px 0}
+.hbar .n{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums}
+.rtable{width:100%;border-collapse:collapse;font-size:.8rem}
+.rtable th,.rtable td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.rtable th{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.rtable td.m{font-family:var(--f-mono);font-size:.74rem;color:var(--muted);white-space:nowrap}
+.rtable tr.mine td{background:var(--accent-soft)}
+.scrollx{overflow-x:auto}
+.rule{font-size:.8rem;color:var(--muted)}
+.why-list{display:flex;flex-direction:column;gap:6px}
+.why-list button{text-align:left!important;font-weight:500!important}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="proto" role="region" aria-label="Prototype controls">
+    <span class="tag">Prototype controls</span>
+    <div class="seg" role="group" aria-label="Which version">
+      <button type="button" id="m-today" aria-pressed="false">4.2 today</button>
+      <button type="button" id="m-new" aria-pressed="true">With the changes</button>
+    </div>
+    <button type="button" class="pbtn primary" id="send">Send an Eastgate callout</button>
+    <button type="button" class="pbtn" id="noans" disabled>Mite doesn't answer</button>
+    <button type="button" class="pbtn" id="skip">Skip ahead 4 days</button>
+    <button type="button" class="pbtn" id="snd" aria-pressed="false">Alert sound: off</button>
+    <button type="button" class="pbtn" id="reset">Start over</button>
+    <p class="hint" id="hint"></p>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Prototype views">
+    <button type="button" role="tab" data-tab="console" aria-selected="true">Kip's console and Mite's phone</button>
+    <button type="button" role="tab" data-tab="duo" aria-selected="false">Both phones: who takes the callout</button>
+    <button type="button" role="tab" data-tab="team" aria-selected="false">Rook team view: phone trouble</button>
+  </div>
+
+  <div id="tab-team" hidden style="display:flex;flex-direction:column;gap:10px">
+    <p class="where">Where: Rook's internal tools, for product, engineering and support. Handlers never see this screen.</p>
+    <div class="window"><div class="titlebar"><span class="dots"><i></i><i></i><i></i></span><span class="url">internal.rook.app/dispatch/phone-trouble</span></div>
+      <div id="v-trouble" style="display:flex;flex-direction:column;gap:14px;padding:16px"></div></div>
+  </div>
+
+  <div id="tab-duo" hidden style="display:flex;flex-direction:column;gap:16px">
+    <div class="duo-bar">
+      <h2>One callout, two phones</h2>
+      <button type="button" class="pbtn primary" id="d-send">Send an Eastgate callout</button>
+      <button type="button" class="pbtn" id="d-day">Next day</button>
+      <button type="button" class="pbtn" id="d-reset">Start over</button>
+    </div>
+    <div class="duo">
+      <div class="duo-col" data-col="mite"></div>
+      <div class="duo-mid" id="duo-mid"></div>
+      <div class="duo-col" data-col="gale"></div>
+    </div>
+  </div>
+
+  <div class="stage" id="tab-console">
+    <div>
+      <p class="where">Where: Kip's handler console, desktop, Eastgate coverage</p>
+      <div class="window">
+        <div class="titlebar"><span class="dots"><i></i><i></i><i></i></span><span class="url" id="url">console.rook.app/coverage/eastgate</span></div>
+        <div class="appbar">
+          <span class="brand">Rook Dispatch<small>Handler console</small></span>
+          <span class="who"><span>Area <b>Eastgate</b></span><span>Handler <b>Kip</b></span><span id="clock-top"></span><button type="button" class="nightbtn" id="night" aria-pressed="false">Night mode</button></span>
+        </div>
+        <div class="app">
+          <nav class="nav" aria-label="Console sections">
+            <button type="button" class="on">Coverage</button>
+            <button type="button" class="nav-x">Callouts</button>
+            <button type="button" class="nav-x">Responders</button>
+            <button type="button" class="nav-x">Reports</button>
+          </nav>
+          <div class="main" id="main">
+            <div id="v-coverage" style="display:flex;flex-direction:column;gap:16px">
+              <div class="needs" id="needs"></div>
+              <div>
+                <h2>Your responders</h2>
+                <p class="sub" id="cards-sub">Click a card to see their recent pings.</p>
+              </div>
+              <div class="cards" id="cards"></div>
+              <div class="feed">
+                <h3>Callout activity · Eastgate</h3>
+                <ol id="feed"></ol>
+              </div>
+            </div>
+            <aside class="drawer" id="drawer" hidden aria-label="Responder detail"></aside>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <p class="where">Where: Meteor Mite's phone, Rook app</p>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="ptop"><span id="ptime"></span><span>Rook</span></div>
+        <div class="screen" id="screen" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* Real weekly pings from the pings table, weeks of 29 Jun to 3 Aug. */
+const HIST={mite:[11,12,10,11,12,11],gale:[13,12,13,14,13,13]};
+const NAMES={mite:"Meteor Mite",gale:"The Gale"};
+const INCIDENTS=["Warehouse fire","Bridge collapse","Gas leak, Dock Street","Runaway tram","Hostage standoff, Mercer Bank","Chemical spill, rail yard","Building fire, Ash Lane","Flood barrier breach"];
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const MISS_LIMIT_TODAY=2;   // simplified: in 4.2, two misses drop Mite behind The Gale
+const CHECKIN_AFTER=3;      // proposed: three misses in a row triggers a check-in
+
+let S, timer=null, toastT=null;
+
+/* Phone trouble: issue types, as the handler and the responder would say them */
+const ISSUES={
+  frozen:{h:"Buttons didn't respond / app froze",r:"The buttons didn't work"},
+  noarrive:{h:"Notification never arrived",r:"I never got it"},
+  late:{h:"Notification arrived late",r:"It came too late"},
+  canttap:{h:"Couldn't tap (gloves, hands full, wet screen)",r:"I couldn't tap in time"},
+  locked:{h:"Couldn't unlock the phone in time",r:"I couldn't unlock my phone"},
+  other:{h:"Something else",r:"Something else"}
+};
+const MITE_DEVICE={app:"Rook 4.2.0",os:"Android 14"};
+/* Example reports so the patterns screen has something to show. Not real data. */
+const SEED=[
+  ["12 09:12","Farlight","frozen","Handler","Rook 4.2.0","Android 14"],
+  ["12 10:40","The Undertow","frozen","Responder","Rook 4.2.0","Android 13"],
+  ["12 11:05","Vesper","canttap","Handler","Rook 4.2.0","iOS 17"],
+  ["12 13:22","Farlight","frozen","Responder","Rook 4.2.0","Android 14"],
+  ["12 14:50","Nightwell","late","Auto-check","Rook 4.1.3","iOS 17"],
+  ["12 16:08","Vesper","noarrive","Auto-check","Rook 4.2.0","iOS 17"],
+  ["12 18:31","Halfmoon","locked","Responder","Rook 4.1.3","Android 14"],
+  ["12 20:47","The Undertow","frozen","Handler","Rook 4.2.0","Android 13"]
+];
+const PATTERN_MIN_REPORTS=3, PATTERN_MIN_RESPONDERS=2, PATTERN_DAYS=7;
+
+function fresh(mode){
+  return {mode, t:new Date(2026,7,12,22,10), // Wed 12 Aug, release week
+    week:{mite:5,gale:8}, hist:{mite:[...HIST.mite],gale:[...HIST.gale]},
+    mite:{sunk:false,missRun:0,status:"normal",statusAt:null,lastPing:new Date(2026,7,12,18,40)},
+    gale:{status:"on",statusAt:null},
+    standing:{mite:.95,gale:.98}, rest:{mite:null,gale:null}, galeLog:[], events:[], tone:{mite:0,gale:1},
+    log:[], feed:[], phone:{view:"idle"}, incident:0, drawer:null, confirm:null, extended:false,
+    view:"coverage", reporting:false, pick:null, filter:null, nextId:1041, seenPatterns:null,
+    reports:SEED.map(([d,resp,issue,src,app,os],i)=>{const [dd,tm]=d.split(" "),[h,mi]=tm.split(":");
+      return {id:"RD-"+(1033+i),t:new Date(2026,7,+dd,+h,+mi),responder:resp,issue,source:src,app,os,misses:1,example:true}}),
+    autoChecked:23, autoNotDelivered:3};
+}
+/* What the system records on its own for every miss */
+function diagFor(){
+  const r=Math.random();
+  const delivered=r>0.2, late=delivered&&r>0.8;
+  return {...MITE_DEVICE, delivered, deliveredAfter:delivered?(late?38:1):null, opened:false,
+    battery:r<0.5?"on":"off", signal:r<0.3?"weak":"good"};
+}
+const suggest=d=>!d?null:!d.delivered?"noarrive":d.deliveredAfter>20?"late":null;
+function patterns(){
+  const cutoff=S.t.getTime()-PATTERN_DAYS*864e5, groups={};
+  S.reports.filter(r=>r.t.getTime()>=cutoff).forEach(r=>{
+    const plat=r.os.split(" ")[0], k=`${r.issue}|${r.app}|${plat}`;
+    (groups[k]=groups[k]||{key:k,issue:r.issue,app:r.app,plat,list:[]}).list.push(r);
+  });
+  return Object.values(groups).map(g=>({...g,n:g.list.length,people:new Set(g.list.map(r=>r.responder)).size}))
+    .filter(g=>g.n>=PATTERN_MIN_REPORTS&&g.people>=PATTERN_MIN_RESPONDERS).sort((a,b)=>b.n-a.n);
+}
+function addReport(issue,source,misses){
+  const r={id:"RD-"+(S.nextId++),t:new Date(S.t),responder:"Meteor Mite",issue,source,...MITE_DEVICE,misses,mine:true};
+  const before=new Set(patterns().map(p=>p.key+":"+p.n));
+  S.reports.unshift(r);
+  const hit=patterns().find(p=>p.key===`${issue}|${r.app}|${r.os.split(" ")[0]}`);
+  if(hit&&!before.has(hit.key+":"+hit.n)){
+    addFeed(`Pattern: "${ISSUES[issue].h}" on ${hit.app} (${hit.plat}), ${hit.n} reports from ${hit.people} responders. Engineering ticket updated.`);
+    toast(`${r.id} sent. It matches a known pattern (${hit.n} reports), so the engineering ticket was updated.`);
+  } else toast(`${r.id} sent to support and engineering with Mite's phone details.`);
+  return r;
+}
+const hhmm=d=>d.toTimeString().slice(0,5);
+const day=d=>`${DAYS[d.getDay()]} ${d.getDate()} ${d.toLocaleString('en-GB',{month:'short'})}`;
+const stamp=d=>`${DAYS[d.getDay()]} ${hhmm(d)}`;
+function adv(min){S.t=new Date(S.t.getTime()+min*60000)}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,3200)}
+function addFeed(text,cls){S.feed.unshift({t:new Date(S.t),text,fresh:true})}
+
+/* Who gets asked first for an Eastgate callout.
+   Score follows config.py: closeness x 0.60 + standing x 0.25 (capability match is equal for both). */
+const MINUTES={mite:4,gale:12}, HORIZON=45, W_CLOSE=.60, W_STAND=.25;
+const closeness=k=>Math.max(0,1-MINUTES[k]/HORIZON);
+const score=k=>W_CLOSE*closeness(k)+W_STAND*S.standing[k];
+const resting=k=>S.rest[k]&&S.rest[k]>S.t;
+function order(){
+  const avail=k=>!resting(k)&&(k==="mite"?S.mite.status!=="away":S.gale.status!=="away");
+  const byScore=(a,b)=>score(b)-score(a);
+  if(S.mode==="today") return ["mite","gale"].filter(avail).sort(byScore);
+  const list=["mite","gale"].filter(k=>avail(k)&&!(k==="mite"&&S.mite.status==="checkin")).sort(byScore);
+  if(S.mite.status==="checkin"&&avail("mite")) list.push("mite");
+  return list;
+}
+/* Standing changes, using the same points as the routing code */
+function bump(who,delta,why){
+  const b=S.standing[who];
+  S.standing[who]=Math.max(0,Math.min(1,b+delta));
+  S.events.unshift({t:new Date(S.t),who,delta:S.standing[who]-b,raw:delta,why});
+}
+const standWord=s=>s>=.8?"strong":s>=.6?"good":s>=.4?"middling":"low";
+function trend(who){
+  const e=S.events.filter(x=>x.who===who).slice(0,3).reduce((a,x)=>a+x.delta,0);
+  return e>.001?"rising":e<-.001?"slipping":"steady";
+}
+const nextAfterMite=()=>order().find(k=>k!=="mite");
+
+/* ---------- Actions ---------- */
+function sendCallout(){
+  if(S.phone.view==="ping") return;
+  adv(35+Math.floor(Math.random()*50));
+  const name=INCIDENTS[S.incident++%INCIDENTS.length];
+  const first=order()[0];
+  S.confirm=null; S.extended=false;
+  if(!first){
+    addFeed(`${name}. No one available in Eastgate. Passed to neighbouring areas.`);
+    toast("Both responders are away, so the callout left Eastgate.");
+  } else if(first==="gale"){
+    S.week.gale++; S.galeLog.unshift({t:new Date(S.t),name,kind:"taken"});
+    bump("gale",RULES.take,`took ${name.toLowerCase()}`);
+    if(S.soundOn) playTone("gale");
+    let why="";
+    if(S.mode==="new"&&S.mite.status==="checkin") why=" Mite hasn't answered the check-in yet.";
+    else if(S.mode==="new"&&S.mite.status==="away") why=" Mite is set to away.";
+    else if(S.mode==="new"&&resting("mite")) why=` Mite is resting until ${hhmm(S.rest.mite)}.`;
+    else if(S.mode==="new") why=` The Gale's standing is ahead of Mite's by enough to outweigh Mite being closer.`;
+    addFeed(`${name}. Pinged The Gale first. Taken.${why}`);
+    if(S.phone.view!=="checkin"&&S.phone.view!=="away") S.phone={view:"idle"};
+    if(S.mode==="today") toast("The callout went straight to The Gale. Mite's phone stayed silent.");
+  } else {
+    S.week.mite++; S.mite.lastPing=new Date(S.t);
+    S.phone={view:"ping",name,left:60,total:60,stage:1,seen:false,kipAlerted:false};
+    addFeed(`${name}. Pinged Meteor Mite.`);
+    if(S.soundOn) playTone("mite");
+    if(S.mode==="new"){vibe(1);if(S.soundOn)setTimeout(()=>beep(1),400)}
+    startTimer();
+  }
+  render();
+}
+/* Escalation: 60-41s buzz, 40-21s louder and flashing, 20s and under Kip is told if Mite hasn't looked */
+const stageFor=left=>left>40?1:left>20?2:3;
+const RING_C=2*Math.PI*52;
+let AC=null;
+function beep(st){
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    const o=AC.createOscillator(),g=AC.createGain();
+    o.frequency.value=[0,880,988,1175][st]; g.gain.value=[0,.05,.1,.16][st];
+    o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.18);}catch(e){}
+}
+/* Console alert tone, different for each responder (Kip's ask) */
+function playTone(k){
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    const f=S.tone[k]===0?[1047,1319]:[392,330];
+    f.forEach((fr,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type="sine";o.frequency.value=fr;g.gain.value=.08;
+      o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+i*.16);o.stop(AC.currentTime+i*.16+.14)});}catch(e){}
+}
+function vibe(st){try{navigator.vibrate&&navigator.vibrate(st===1?[400,200,400]:[600,120,600,120,600])}catch(e){}}
+function markSeen(){
+  if(S.phone.view==="ping"&&!S.phone.seen){S.phone.seen=true;
+    const cs=document.getElementById('card-seen'); if(cs) cs.textContent="Seen by Mite";}
+}
+function startTimer(){
+  clearInterval(timer); let tick=0;
+  timer=setInterval(()=>{ // 60 seconds, sped up about 6x
+    const p=S.phone;
+    if(p.view!=="ping"){clearInterval(timer);return}
+    p.left--; tick++;
+    if(p.left<=0){clearInterval(timer);answer("missed");return}
+    if(S.mode==="new"){
+      const st=stageFor(p.left);
+      if(st!==p.stage){
+        p.stage=st; vibe(st);
+        if(st===3&&!p.seen&&!p.kipAlerted){
+          p.kipAlerted=true;
+          addFeed(`Meteor Mite hasn't seen "${p.name}" with 20s left. Kip alerted.`);
+          toast("Kip's console flags it: Mite hasn't seen the callout yet. Kip can call Mite or act for them.");
+        }
+        render(); return;
+      }
+      if(S.soundOn&&tick%(p.stage===1?10:5)===0) beep(p.stage);
+    }
+    const n=document.getElementById('anum'); if(n) n.textContent=p.left;
+    const pr=document.getElementById('aprog'); if(pr) pr.style.strokeDashoffset=RING_C*(1-Math.min(1,p.left/p.total));
+    const b=document.getElementById('ringbar'),tx=document.getElementById('ringtxt');
+    if(b){b.style.width=Math.min(100,p.left/60*100)+'%';tx.textContent=`${p.left}s to answer`}
+    const cl=document.getElementById('card-left'); if(cl) cl.textContent=`${p.left}s left`;
+    const nl=document.getElementById('need-left'); if(nl) nl.textContent=`${p.left}s`;
+  },160);
+}
+function answer(kind,by){
+  clearInterval(timer);
+  const name=S.phone.name; S.confirm=null;
+  const entry={t:new Date(S.t),name,kind,by};
+  if(kind==="missed"&&!by){entry.diag=diagFor();S.autoChecked++;if(!entry.diag.delivered)S.autoNotDelivered++}
+  S.log.unshift(entry);
+  if(kind==="taken") bump("mite",RULES.take,`took ${name.toLowerCase()}`);
+  else if(by) bump("mite",0,`Kip passed ${name.toLowerCase()} on (not counted)`);
+  else if(kind==="declined") bump("mite",RULES.pass,`turned down ${name.toLowerCase()}`);
+  else bump("mite",S.mode==="today"?RULES.missToday:RULES.missNew,S.mode==="today"?`missed ${name.toLowerCase()} (counted as a no)`:`missed ${name.toLowerCase()} (not counted)`);
+  if(kind==="taken"){
+    addFeed(by?`Kip accepted ${name.toLowerCase()} for Meteor Mite after Mite confirmed by voice.`:`Meteor Mite took ${name.toLowerCase()}.`);
+    S.mite.missRun=0;
+    if(S.mode==="new"&&S.mite.status==="back") S.mite.status="normal";
+    S.phone={view:by?"kipTaken":"taken",name};
+  } else {
+    adv(1);
+    const next=nextAfterMite();
+    if(next){S.week[next]++; if(next==="gale"){S.galeLog.unshift({t:new Date(S.t),name,kind:"taken"});bump("gale",RULES.take,`took ${name.toLowerCase()} after Mite`)}}
+    const tail=next?` ${NAMES[next]} took it.`:" No one else free in Eastgate. Passed to neighbouring areas.";
+    if(by){
+      addFeed(`Kip passed ${name.toLowerCase()} on for Meteor Mite. Not counted against Mite.${tail}`);
+      S.phone={view:"kipPassed",name}; render(); return;
+    }
+    addFeed((kind==="missed"?"No answer from Meteor Mite in 60s.":"Meteor Mite turned it down.")+tail);
+    if(S.mode==="today"){
+      S.phone={view:"idle"}; // in 4.2 the ping just disappears
+      if(kind==="missed") toast("In 4.2 the ping just vanishes from Mite's phone. No message.");
+    } else if(kind==="missed"){
+      S.mite.missRun++;
+      if(S.mite.missRun>=CHECKIN_AFTER){
+        S.mite.status="checkin"; S.mite.statusAt=new Date(S.t);
+        addFeed(`Check-in sent to Meteor Mite after ${S.mite.missRun} missed pings in a row.`);
+        S.phone={view:"checkin"};
+      } else S.phone={view:"missed",name};
+    } else {S.phone={view:"declined"}; S.mite.missRun=0;}
+  }
+  render();
+}
+function checkin(on){
+  adv(2);
+  if(on){
+    S.mite.status="back"; S.mite.missRun=0; S.mite.statusAt=new Date(S.t);
+    addFeed("Meteor Mite checked in: on tonight. Back first in line.");
+    S.phone={view:"back"};
+  } else {
+    S.mite.status="away"; S.mite.statusAt=new Date(S.t);
+    addFeed("Meteor Mite set themself to away.");
+    S.phone={view:"away"};
+  }
+  render();
+}
+/* Handler actions from Kip's console */
+function act(a){
+  const m=S.mite;
+  switch(a){
+    case "accept-ask": S.confirm="accept"; break;
+    case "accept-yes": answer("taken","kip"); return;
+    case "pass": answer("declined","kip"); return;
+    case "more":
+      if(!S.extended&&S.phone.view==="ping"){S.phone.left+=30;S.phone.total=Math.max(S.phone.total,S.phone.left);S.extended=true;addFeed("Kip gave Meteor Mite 30 more seconds on this ping.")}
+      break;
+    case "report-open": {
+      S.reporting=true; const t=reportTargets(); S.pick=suggest(t[0]&&t[0].diag); break; }
+    case "report-cancel": S.reporting=false; S.pick=null; break;
+    case "report-send": {
+      if(!S.pick) break;
+      const t=reportTargets(), n=t.length;
+      t.forEach(r=>{r.flag=true;r.issue=S.pick});
+      m.missRun=0;
+      if(m.status==="checkin"){m.status="normal";if(S.phone.view==="checkin")S.phone={view:"idle"}}
+      const rep=addReport(S.pick,"Handler",n);
+      addFeed(`Kip reported phone trouble for Meteor Mite: "${ISSUES[S.pick].h}". ${n} miss${n>1?"es":""} not counted. ${rep.id} sent to support and engineering.`);
+      S.reporting=false; S.pick=null; break; }
+    case "on-ask": S.confirm="on"; break;
+    case "off-ask": S.confirm="off"; break;
+    case "on-yes":
+      adv(1); m.status="back"; m.missRun=0; m.statusAt=new Date(S.t); S.confirm=null;
+      addFeed("Kip checked Meteor Mite in: on tonight (confirmed with Mite by phone call).");
+      S.phone={view:"kipOn"}; break;
+    case "off-yes":
+      adv(1); m.status="away"; m.statusAt=new Date(S.t); S.confirm=null;
+      addFeed("Kip set Meteor Mite to away.");
+      S.phone={view:"away",byKip:true}; break;
+    case "cancel": S.confirm=null; break;
+    case "test-mite":
+      S.phone={view:"test",sent:new Date(S.t)};
+      addFeed("Kip sent a test ping to Meteor Mite's phone."); break;
+    case "gale-away":
+      S.gale.status="away"; S.gale.statusAt=new Date(S.t);
+      addFeed("Kip set The Gale to away."); break;
+    case "gale-on":
+      S.gale.status="on"; addFeed("Kip switched The Gale back on."); break;
+    case "test-gale":
+      addFeed("Kip sent a test ping to The Gale's phone. The Gale confirmed it in 4s.");
+      toast("The Gale's phone is receiving pings."); break;
+    default:
+      if(a.startsWith("rest:")){const k=a.slice(5);S.rest[k]=new Date(S.t.getTime()+120*60000);
+        addFeed(`Kip gave ${NAMES[k]} a rest until ${hhmm(S.rest[k])}. Not pinged until then, and it doesn't affect standing.`);
+        toast(`${NAMES[k]} won't be pinged until ${hhmm(S.rest[k])}.`)}
+      else if(a.startsWith("rest-end:")){const k=a.slice(9);S.rest[k]=null;addFeed(`Kip ended ${NAMES[k]}'s rest early.`)}
+      else if(a.startsWith("tone:")){const k=a.slice(5);S.tone[k]=(S.tone[k]+1)%TONES.length;playTone(k)}
+  }
+  render();
+}
+function switchOn(){
+  adv(1); S.mite.status="back"; S.mite.missRun=0; S.mite.statusAt=new Date(S.t);
+  addFeed("Meteor Mite switched back on. Back first in line.");
+  S.phone={view:"back"}; render();
+}
+function skipAhead(){
+  if(S.phone.view==="ping") answer("missed");
+  // close out this week and simulate the next 4 days
+  S.hist.mite.push(S.week.mite); S.hist.gale.push(S.week.gale);
+  if(S.hist.mite.length>8){S.hist.mite.shift();S.hist.gale.shift()}
+  S.week={mite:0,gale:0};
+  if(S.mode==="new"&&S.mite.status==="checkin"){
+    S.mite.status="away"; S.mite.statusAt=new Date(S.t.getTime()+60*60000);
+    addFeed("No answer to the check-in by 23:00. Meteor Mite set to away.");
+    S.phone={view:"away"};
+  }
+  for(let i=0;i<8;i++){
+    adv(720);
+    const first=order()[0];
+    if(!first) continue;
+    if(first==="gale"){S.week.gale++;bump("gale",RULES.take,"took a callout")}
+    else { S.week.mite++; S.mite.lastPing=new Date(S.t);
+      if(Math.random()<0.75){S.mite.missRun=0; if(S.mite.status==="back")S.mite.status="normal"; bump("mite",RULES.take,"took a callout")}
+      else {S.week.gale++; bump("mite",RULES.pass,"turned one down"); bump("gale",RULES.take,"took a callout")} }
+  }
+  if(S.mode==="new") ["mite","gale"].forEach(k=>{const s=S.standing[k];if(s<.5)bump(k,(.5-s)*(1-Math.pow(1-RULES.fade,4)),"low standing eased back over 4 days")});
+  S.rest={mite:null,gale:null};
+  if(S.gale.status!=="away") S.week.gale+=4; // The Gale's own home callouts
+  addFeed(`Four days pass. Meteor Mite was pinged ${S.week.mite} times, The Gale ${S.week.gale}.`);
+  if(S.phone.view!=="away") S.phone={view:"idle"};
+  render();
+}
+
+/* ---------- Rendering ---------- */
+function bars(hist,now){
+  const all=[...hist.slice(-7),now],max=22;
+  return '<div class="bars" aria-hidden="true">'+all.map((v,i)=>{
+    const last=i===all.length-1;
+    return `<i class="${last?'now'+(v<4?' low':''):''}" style="height:${Math.max(6,Math.min(100,v/max*100))}%"></i>`}).join('')+'</div>';
+}
+function miteCard(){
+  const m=S.mite, n=S.week.mite;
+  let pill=["neutral","on"], why=null;
+  if(S.mode==="today"){
+    pill=n<3?["quiet",`${n} this week`]:["neutral",`${n} this week`];
+    why={cls:"plain",lines:[`Last ping ${stamp(m.lastPing)}.`]};
+  } else if(m.status==="checkin"){
+    pill=["quiet","asked less"];
+    why={cls:"",lines:[`Missed ${m.missRun} pings in a row (ran out of time).`,`Check-in sent ${hhmm(m.statusAt)}. Waiting for Mite.`,"Eastgate callouts go to The Gale first until then."]};
+  } else if(m.status==="away"){
+    pill=["away","away"];
+    why={cls:"plain",lines:[`Away since ${stamp(m.statusAt)}.`,"Not pinged until Mite switches back on."]};
+  } else if(m.status==="back"){
+    pill=["ok","back in line"];
+    why={cls:"ok",lines:[`Checked in ${hhmm(m.statusAt)}: on tonight.`]};
+  } else if(resting("mite")){
+    pill=["away","resting"];
+    why={cls:"plain",lines:["On a rest Kip set. Standing isn't affected."]};
+  } else {
+    const first=order()[0]==="mite";
+    pill=first?["ok","first in line"]:["quiet","second in line"];
+    const lines=[];
+    if(m.missRun>0) lines.push(`Missed ${m.missRun} in a row. Misses aren't counted as a no.`);
+    lines.push(first?"Gets Eastgate callouts first.":"The Gale is asked first until Mite's standing recovers.");
+    why={cls:first?"ok":"",lines};
+  }
+  return card("mite",pill,n,"usual ~11",why);
+}
+function galeCard(){
+  const n=S.week.gale;
+  let pill=n>16?["busy",`${n} this week`]:["neutral",`${n} this week`], why;
+  if(S.mode==="today") why={cls:"plain",lines:["Last ping "+stamp(S.t)+"."]};
+  else if(S.gale.status==="away") {pill=["away","away"];why={cls:"plain",lines:[`Away since ${stamp(S.gale.statusAt)}, set by Kip.`]}}
+  else if(S.mite.status==="checkin"||S.mite.status==="away") {pill=["busy","covering"];why={cls:"",lines:["Covering Meteor Mite's Eastgate callouts."]}}
+  else why={cls:"ok",lines:["Normal load."]};
+  return card("gale",pill,n,"usual ~13",why);
+}
+const B=(a,label,opt={})=>`<button type="button" class="abtn${opt.go?' go':''}" data-act="${a}"${opt.off?' disabled':''}>${label}</button>`;
+function confirmRow(kind){
+  const txt={accept:"Only accept after Mite confirms by voice or radio. This is logged and shown on Mite's phone.",
+    on:"Check Mite in only after Mite tells you they're available.",
+    off:"Mite won't get pings until switched back on. Mite's phone will show who set this."}[kind];
+  const yes={accept:["accept-yes","Yes, Mite confirmed"],on:["on-yes","Yes, check Mite in"],off:["off-yes","Yes, set away"]}[kind];
+  return `<span class="confirm">${txt}</span><span class="arow">${B(yes[0],yes[1],{go:1})}${B("cancel","Cancel")}</span>`;
+}
+/* Misses a report would cover: the current run, or the latest unreported miss */
+function reportTargets(){
+  const un=S.log.filter(r=>r.kind==="missed"&&!r.by&&!r.flag);
+  return un.slice(0,Math.max(1,S.mite.missRun)).filter(r=>S.log.indexOf(r)<6);
+}
+function reportForm(){
+  const t=reportTargets(), d=t[0]&&t[0].diag, sug=suggest(d);
+  const yn=(ok,txt)=>`<b class="${ok?'':'bad'}">${txt}</b>`;
+  const diag=d?`<div class="diag" aria-label="Captured automatically">
+    <span>Delivered</span>${d.delivered?yn(d.deliveredAfter<20,`yes, after ${d.deliveredAfter}s`):yn(false,"no")}
+    <span>Opened</span>${yn(false,"never")}
+    <span>App</span><b>${d.app} · ${d.os}</b>
+    <span>Battery saver</span>${yn(d.battery==="off",d.battery)}
+    <span>Signal</span>${yn(d.signal==="good",d.signal)}
+  </div>`:"";
+  return `<div class="rform">
+    <span class="confirm"><b>What went wrong?</b> Covers ${t.length} miss${t.length>1?"es":""} (latest ${hhmm(t[0].t)}). A reason is required, so every cleared miss tells us something.</span>
+    <div class="chips">${Object.entries(ISSUES).map(([k,v])=>`<button type="button" class="chip" data-pick="${k}" aria-pressed="${S.pick===k}">${v.h}${sug===k?'<span class="sug">matches auto-check</span>':''}</button>`).join('')}</div>
+    <span class="confirm">Captured automatically on the miss:</span>${diag}
+    <span class="arow">${B("report-send","Send report",{go:1,off:!S.pick})}${B("report-cancel","Cancel")}</span>
+  </div>`;
+}
+function actions(id){
+  if(S.mode==="today") return `<div class="acts"><span class="acts-label">Handler actions</span><span class="none">None in 4.2. Kip can only watch.</span></div>`;
+  let h="";
+  if(id==="mite"){
+    const m=S.mite, live=S.phone.view==="ping";
+    if(live){
+      h+=`<div class="live"><span>Live ping on Mite's phone · <b id="card-left">${S.phone.left}s left</b> · <span id="card-seen">${S.phone.seen?"Seen by Mite":"Not seen yet"}</span></span>`+
+        (S.phone.kipAlerted&&!S.phone.seen?`<span><b>Mite hasn't looked at it.</b> Call Mite, or act for them below.</span>`:"")+
+        (S.confirm==="accept"?confirmRow("accept"):
+        `<span class="arow">${B("accept-ask","Accept for Mite",{go:1})}${B("pass","Pass it on now")}${B("more","Give 30s more",{off:S.extended})}</span>`)+`</div>`;
+    }
+    if(S.reporting) h+=reportForm();
+    else if(S.confirm==="on"||S.confirm==="off") h+=confirmRow(S.confirm);
+    else {
+      let row="";
+      if(m.status==="checkin") row+=B("on-ask","Check Mite in",{go:1})+B("off-ask","Set Mite away");
+      else if(m.status==="away") row+=B("on-ask","Switch Mite back on",{go:1});
+      else row+=B("off-ask","Set Mite away");
+      if(reportTargets().length) row+=B("report-open","Report phone trouble");
+      row+=B("test-mite","Send test ping",{off:live});
+      row+=resting("mite")?B("rest-end:mite","End rest now"):B("rest:mite","Rest 2 hours");
+      h+=`<span class="arow">${row}</span>`;
+    }
+  } else {
+    h+=`<span class="arow">${S.gale.status==="away"?B("gale-on","Switch The Gale back on",{go:1}):B("gale-away","Set The Gale away")}${B("test-gale","Send test ping")}${resting("gale")?B("rest-end:gale","End rest now"):B("rest:gale","Rest 2 hours")}</span>`;
+  }
+  h+=`<span class="tone">Console alert for ${id==="mite"?"Mite":"The Gale"}: ${B("tone:"+id,TONES[S.tone[id]]+" ▸")}</span>`;
+  return `<div class="acts"><span class="acts-label">Handler actions</span>${h}</div>`;
+}
+/* Where this responder sits for the next Eastgate callout, in a handler's words */
+function lineInfo(id){
+  const o=order(), pos=o.indexOf(id), other=id==="mite"?"gale":"mite";
+  if(resting(id)) return {head:`Resting until ${hhmm(S.rest[id])}`,sub:"Not pinged until then. Set by Kip."};
+  if(pos<0) return {head:"Not in line",sub:id==="mite"&&S.mite.status==="away"||id==="gale"&&S.gale.status==="away"?"Set to away":"Unavailable"};
+  const place=["1st","2nd"][pos]+" in line for Eastgate";
+  const closer=MINUTES[id]<MINUTES[other];
+  let sub=`${MINUTES[id]} min away · standing ${standWord(S.standing[id])}, ${trend(id)}`;
+  if(id==="mite"&&S.mite.status==="checkin") sub="Asked last until Mite answers the check-in";
+  else if(pos===1&&closer) sub=`Closer than ${NAMES[other]}, but standing is ${standWord(S.standing[id])} after recent ${S.events.find(e=>e.who===id&&e.raw<0)?"no's":"activity"}`;
+  return {head:place,sub};
+}
+/* Tonight's pings as dots */
+function tonight(id){
+  const list=(id==="mite"?S.log:S.galeLog).slice(0,12).reverse();
+  if(!list.length) return `<span class="tonight"><span class="lbl">Tonight:</span>no pings yet</span>`;
+  const cls=r=>r.by?"kip":r.flag?"flagged":r.kind;
+  const ttl=r=>`${hhmm(r.t)} ${r.name}: ${r.by?(r.kind==="taken"?"taken by Kip":"passed by Kip"):r.flag?"missed, phone trouble":r.kind==="declined"?"turned down":r.kind}`;
+  const c={taken:0,declined:0,missed:0}; list.forEach(r=>{if(!r.by&&!r.flag&&c[r.kind]!=null)c[r.kind]++});
+  return `<span class="tonight"><span class="lbl">Tonight:</span>${list.map(r=>`<i class="${cls(r)}" title="${ttl(r)}"></i>`).join("")}<span class="lbl" style="margin-left:6px">${c.taken} taken · ${c.declined} no · ${c.missed} missed</span></span>`;
+}
+const TONES=["High chime","Low tone"];
+function card(id,pill,n,usual,why){
+  const today=S.mode==="today", li=today?null:lineInfo(id);
+  return `<div class="card${S.drawer===id?' sel':''}" data-id="${id}">
+    <span class="card-head"><span class="cname">${NAMES[id]}</span><span class="pill ${pill[0]}">${pill[1]}</span></span>
+    ${li?`<span class="line"><b>${li.head}</b><span>${li.sub}</span></span>`:""}
+    ${today?"":tonight(id)}
+    <span class="stat"><b>${n}</b><span>pings this week · ${usual}</span></span>
+    ${bars(S.hist[id],n)}
+    <span class="why ${why.cls}">${why.lines.map(l=>`<span>${l}</span>`).join('')}</span>
+    <button type="button" class="more" data-open="${id}">${today?"See recent pings →":"Why this place in line →"}</button>
+    ${actions(id)}
+  </div>`;
+}
+/* "Needs you": the few things a handler should act on now, most urgent first */
+function needs(){
+  const el=document.getElementById('needs');
+  if(S.mode==="today"){el.innerHTML="";return}
+  const m=S.mite, p=S.phone, items=[];
+  if(p.view==="ping"&&p.kipAlerted&&!p.seen)
+    items.push(["hi",`<b>Mite hasn't looked at ${p.name.toLowerCase()}.</b> <span id="need-left">${p.left}s</span> left. Call Mite, or act for them.`,B("accept-ask","Accept for Mite",{go:1})+B("pass","Pass it on now")]);
+  if(m.status==="checkin")
+    items.push(["hi",`<b>Mite hasn't answered the check-in</b> sent at ${hhmm(m.statusAt)}. Eastgate callouts go to The Gale until then.`,B("on-ask","Check Mite in",{go:1})+B("off-ask","Set Mite away")]);
+  else if(m.missRun>=2)
+    items.push(["",`<b>Mite has missed ${m.missRun} in a row.</b> Busy, or is the phone playing up? Misses don't hurt Mite's standing.`,B("test-mite","Send test ping")+(reportTargets().length?B("report-open","Report phone trouble"):"")]);
+  const o=order();
+  if(o[0]==="gale"&&o.includes("mite")&&m.status!=="checkin"&&!resting("mite"))
+    items.push(["",`<b>Mite has dropped to 2nd in line</b> for Eastgate after recent no's. The Gale gets asked first, even though Mite is closer.`,B("open:mite","See why")]);
+  if(S.week.gale>=17&&!resting("gale")&&S.gale.status!=="away")
+    items.push(["info",`<b>The Gale is at ${S.week.gale} pings this week</b> (usual 13). Consider a rest.`,B("rest:gale","Rest The Gale 2 hours")]);
+  el.innerHTML=items.length?`<span class="needs-h">Needs you · ${items.length}</span>`+items.map(([c,t,a])=>`<div class="need ${c}"><p>${t}</p><span class="arow">${a}</span></div>`).join(""):"";
+}
+function rankTable(){
+  const rows=["mite","gale"].map(k=>{const pos=order().indexOf(k);
+    return `<tr><td>${NAMES[k]}</td><td>${MINUTES[k]} min</td><td>${standWord(S.standing[k])} (${S.standing[k].toFixed(2)})</td><td>${pos<0?"out":["1st","2nd"][pos]}</td></tr>`}).join("");
+  return `<p class="note">How Dispatch picks who to ask for Eastgate: mostly who's closest, then standing.</p>
+    <table class="rank"><thead><tr><th></th><th>Away</th><th>Standing</th><th>Place</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function evList(id){
+  const ev=S.events.filter(e=>e.who===id).slice(0,6);
+  if(!ev.length) return `<p class="note">Nothing has moved ${NAMES[id]}'s standing yet tonight.</p>`;
+  return `<p class="note">What moved ${NAMES[id]}'s standing</p><ul class="ev">${ev.map(e=>{const c=e.delta>.0005?"up":e.delta<-.0005?"down":"zero";
+    return `<li><span>${hhmm(e.t)} · ${e.why}</span><span class="d ${c}">${sign(e.delta)}</span></li>`}).join("")}</ul>`;
+}
+function drawer(){
+  const d=document.getElementById('drawer');
+  if(!S.drawer){d.hidden=true;return}
+  d.hidden=false;
+  const id=S.drawer, nm=NAMES[id];
+  let h=`<button type="button" class="x" id="dclose">Close</button><h3>${nm}</h3>`;
+  if(id==="mite"){
+    const rows=S.log.slice(0,8);
+    const lbl=r=>r.by?(r.kind==="taken"?"taken by Kip":"passed by Kip"):r.flag?`missed · ${ISSUES[r.issue].r.toLowerCase()}`:r.kind==="declined"?"turned down":r.kind;
+    h+=`<p class="note">Recent pings</p>`+(rows.length?`<ul class="dl">${rows.map(r=>`<li><span>${stamp(r.t)} · ${r.name}</span><span class="o-${r.kind}">${lbl(r)}</span></li>`).join('')}</ul>`:`<p class="note">No pings yet in this session. Send a callout.</p>`);
+    if(S.mode==="today"){
+      h+=`<p class="note">This is all 4.2 shows. There's no reason, no ask order and no way to see that Mite has dropped behind The Gale.</p>`;
+    } else {
+      h+=rankTable()+evList("mite");
+      if(S.mite.status==="checkin"||S.mite.status==="away"){
+        h+=`<p class="note">Why: ${S.mite.status==="away"?"Mite is away.":`${S.mite.missRun} missed pings in a row, check-in not answered yet.`} Misses don't lower Mite's standing; this only changes until Mite answers.</p>
+        <button type="button" class="kbtn solid" id="msg">Message Mite</button>`;
+      } else h+=`<p class="note">Misses don't count as a "no." Turning callouts down still does.</p>`;
+    }
+  } else {
+    h+=`<p class="note">${S.week.gale} pings this week, usually about 13.</p>`;
+    if(S.mode==="new") h+=rankTable()+evList("gale");
+    if(S.mode==="new"&&(S.mite.status==="checkin"||S.mite.status==="away")) h+=`<p class="note">Covering Meteor Mite's Eastgate callouts while Mite is ${S.mite.status==="away"?"away":"unconfirmed"}.</p>`;
+    if(S.mode==="today"&&S.mite.sunk) h+=`<p class="note">The Gale is now asked first for Eastgate. Nothing on this screen says so.</p>`;
+  }
+  d.innerHTML=h;
+  document.getElementById('dclose').onclick=()=>{S.drawer=null;render()};
+  const msg=document.getElementById('msg');
+  if(msg) msg.onclick=()=>{msg.textContent="Sent";msg.disabled=true;toast("Message to Meteor Mite: \"Are you on tonight? Tap the check-in on your phone.\"")};
+}
+function phone(){
+  const s=document.getElementById('screen'), v=S.phone.view, m=S.mite;
+  document.getElementById('ptime').textContent=hhmm(S.t);
+  const P={check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',pass:'<path d="M5 12h13M13 6l6 6-6 6"/>',
+    alert:'<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/>',
+    ask:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.4M12 16.8h.01"/>',
+    moon:'<path d="M19.5 14.5A8 8 0 1 1 9.5 4.5a6.5 6.5 0 0 0 10 10z"/>',
+    phone:'<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 17.5h2"/>',
+    kip:'<circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.4-3.6 4-5.4 7-5.4s5.6 1.8 7 5.4"/>'};
+  const scr=(icon,tone,title,sub,note)=>`<div class="scr"><span class="ic ${tone}"><svg viewBox="0 0 24 24" aria-hidden="true">${P[icon]}</svg></span><strong class="s-title">${title}</strong>${sub?`<span class="s-sub">${sub}</span>`:""}${note?`<span class="s-note">${note}</span>`:""}</div>`;
+  const btn=(a,label,cls="no")=>`<button type="button" class="${cls} big" data-a="${a}">${label}</button>`;
+  const btns=(...b)=>`<div class="pbtns">${b.join("")}</div>`;
+  const nm=S.phone.name;
+  let h="";
+  if(v==="idle"){
+    let status, small;
+    if(S.mode==="today"){status="No callouts";small=`Last ping: ${stamp(m.lastPing)}`}
+    else if(m.status==="checkin"){status="Check-in waiting";small=""}
+    else {status="On tonight · Eastgate";small=`${S.week.mite} callouts this week`}
+    h=`<div class="lock"><span class="clock">${hhmm(S.t)}</span><span class="date">${day(S.t)}</span><span class="status">${status}</span><span class="small">${small}</span></div>`;
+  } else if(v==="ping"&&S.mode==="today"){
+    // 4.2 today: an ordinary banner, easy to miss
+    h=`<div class="notif"><span class="app-n">Rook Dispatch · callout</span><strong>${nm}, Eastgate</strong><span>6 min away · needs structural-entry</span><div class="ring"><i id="ringbar" style="width:${S.phone.left/60*100}%"></i></div><span class="small" id="ringtxt">${S.phone.left}s to answer</span></div>
+    <div class="pbtns"><button type="button" class="yes" data-a="taken">Take it</button><button type="button" class="no" data-a="declined">Not this one</button></div>`;
+  } else if(v==="ping"){
+    const p=S.phone;
+    h=`<div class="alertscr stage-${p.stage}" id="alert">
+      <div class="a-top"><span class="a-badge">Callout</span><span class="a-dnd">Breaks through silent mode</span></div>
+      <div class="a-timer"><span class="pulse"></span><span class="pulse p2"></span>
+        <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="trk"/><circle cx="60" cy="60" r="52" class="prog" id="aprog" stroke-dasharray="${RING_C}" stroke-dashoffset="${RING_C*(1-Math.min(1,p.left/p.total))}"/></svg>
+        <span class="a-num"><b id="anum">${p.left}</b><small>sec</small></span></div>
+      <strong class="a-title">${nm}</strong>
+      <div class="a-chips"><span>Eastgate</span><span>6 min</span><span>Structural entry</span></div>
+      <button type="button" class="a-take" data-a="taken">Take it</button>
+      <div class="a-row"><button type="button" data-a="declined">Pass</button><button type="button" data-a="more"${S.extended?" disabled":""}>+30 sec</button></div>
+      <div class="a-ladder" aria-label="Alert level">${["Buzz","Louder","Kip told"].map((l,i)=>`<span class="${p.stage>i?"on":""}"><i></i>${l}</span>`).join("")}</div>
+    </div>`;
+  } else if(v==="taken"){
+    h=scr("check","good","You're on it",nm,"Kip has been told")+btns(btn("done","Done"));
+  } else if(v==="declined"){
+    h=scr("pass","calm","Passed","Sent to the next responder")+btns(btn("done","Done"));
+  } else if(v==="missed"){
+    h=scr("alert","warn","Missed",`${nm} went to The Gale`,"Not held against you")+btns(btn("why","Tell us why"),btn("done","OK","no ghost"));
+  } else if(v==="why"){
+    h=scr("ask","info","What happened?","","Never counted against you")+`<div class="pbtns why-list">${Object.entries(ISSUES).map(([k,x])=>`<button type="button" class="no" data-a="why:${k}">${x.r}</button>`).join("")}<button type="button" class="no ghost" data-a="done">Skip</button></div>`;
+  } else if(v==="whyThanks"){
+    h=scr("check","good","Thanks","Sent to the Rook team","Kip can see it too")+btns(btn("done","OK"));
+  } else if(v==="checkin"){
+    h=scr("ask","warn","Still on tonight?",`${m.missRun||CHECKIN_AFTER} missed in a row`,"No answer by 23:00 sets you away")+btns(btn("on","Yes, I'm on","yes"),btn("off","Away for now"));
+  } else if(v==="back"){
+    h=scr("check","good","Back in line","Next Eastgate callout is yours")+btns(btn("done","OK"));
+  } else if(v==="away"){
+    h=scr("moon","calm","Away",S.phone.byKip?`Set by Kip at ${hhmm(S.mite.statusAt)}`:"No pings until you switch back on")+btns(btn("switch","Switch back on","yes"));
+  } else if(v==="kipTaken"){
+    h=scr("kip","good","Kip took this for you",nm,"You're on it")+btns(btn("done","OK"));
+  } else if(v==="kipPassed"){
+    h=scr("kip","calm","Kip passed this on",nm,"Not held against you")+btns(btn("done","OK"));
+  } else if(v==="kipOn"){
+    h=scr("kip","good","Kip checked you in","First in line for Eastgate")+btns(btn("done","OK"),btn("off","I'm actually away","no ghost"));
+  } else if(v==="test"){
+    h=scr("phone","info","Test from Kip","Did this buzz?")+btns(btn("test-ok","Yes, it arrived","yes"));
+  }
+  s.innerHTML=h;
+  const ph=document.querySelector('.phone'), live=v==="ping"&&S.mode==="new";
+  ph.classList.toggle('buzz',live);
+  ["s2","s3"].forEach(c=>ph.classList.toggle(c,live&&S.phone.stage===+c[1]));
+  const al=document.getElementById('alert'); if(al) al.addEventListener('pointerdown',markSeen);
+  s.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{
+    const a=b.dataset.a;
+    if(a==="taken"||a==="declined"||a==="missed") answer(a);
+    else if(a==="more"){
+      if(!S.extended&&S.phone.view==="ping"){S.phone.left+=30;S.phone.total=Math.max(S.phone.total,S.phone.left);S.extended=true;S.phone.seen=true;S.phone.stage=stageFor(S.phone.left);addFeed("Meteor Mite asked for 30 more seconds.");render()}
+    }
+    else if(a==="done"){S.phone={view:"idle"};render()}
+    else if(a==="on") checkin(true);
+    else if(a==="off") checkin(false);
+    else if(a==="switch") switchOn();
+    else if(a==="why"){S.phone={view:"why",name:S.phone.name};render()}
+    else if(a.startsWith("why:")){
+      const k=a.slice(4), r=S.log.find(x=>x.kind==="missed"&&!x.by&&!x.flag);
+      if(r){r.flag=true;r.issue=k}
+      S.mite.missRun=Math.max(0,S.mite.missRun-1);
+      const rep=addReport(k,"Responder",1);
+      addFeed(`Meteor Mite reported why they missed a ping: "${ISSUES[k].r}". Not counted. ${rep.id} sent to support and engineering.`);
+      S.phone={view:"whyThanks"};render();
+    }
+    else if(a==="test-ok"){adv(1);addFeed("Meteor Mite confirmed the test ping. Phone is receiving pings.");S.phone={view:"idle"};render()}
+  });
+}
+function troubleView(){
+  const el=document.getElementById('v-trouble');
+  if(S.mode==="today"){
+    el.innerHTML=`<h2>Phone trouble</h2><p class="sub">This screen doesn't exist in 4.2. A miss is just a miss: nobody records why it happened, so nobody can spot a pattern.</p>`;
+    return;
+  }
+  const cutoff=S.t.getTime()-PATTERN_DAYS*864e5, recent=S.reports.filter(r=>r.t.getTime()>=cutoff);
+  const pats=patterns(), people=new Set(recent.map(r=>r.responder)).size;
+  const byIssue=Object.keys(ISSUES).map(k=>[k,recent.filter(r=>r.issue===k).length]).filter(x=>x[1]).sort((a,b)=>b[1]-a[1]);
+  const devs={}; recent.forEach(r=>{const k=`${r.app} · ${r.os.split(" ")[0]}`;devs[k]=(devs[k]||0)+1});
+  const byDev=Object.entries(devs).sort((a,b)=>b[1]-a[1]);
+  const max=Math.max(1,...byIssue.map(x=>x[1]),...byDev.map(x=>x[1]));
+  const hb=(label,n)=>`<div class="hbar"><span>${label}</span><span class="n">${n}</span><span class="track"><i style="width:${n/max*100}%"></i></span></div>`;
+  const rows=(S.filter?recent.filter(r=>`${r.issue}|${r.app}|${r.os.split(" ")[0]}`===S.filter):recent).sort((a,b)=>b.t-a.t);
+  el.innerHTML=`
+    <div><h2>Phone trouble · all areas</h2><p class="sub">Every missed ping is checked automatically. Handlers and responders say what went wrong. When the same problem repeats, engineering is told without anyone having to notice.</p></div>
+    <span class="example">Example data · reports marked RD-1033 to RD-1040 are made up for this prototype</span>
+    ${pats.length?pats.map(p=>`<div class="alert"><strong>Pattern: ${ISSUES[p.issue].h}</strong>
+      <span>${p.n} reports from ${p.people} responders on ${p.app} (${p.plat}) in the last ${PATTERN_DAYS} days.</span>
+      <span class="route">Engineering ticket opened automatically for Dispatch engineering and the phone app team. Support sees it before the next ticket comes in.</span>
+      <span class="arow">${B("filter:"+p.key,S.filter===p.key?"Showing these reports":"See these reports",{off:S.filter===p.key})}</span></div>`).join(''):`<p class="sub">No repeating patterns in the last ${PATTERN_DAYS} days.</p>`}
+    <div class="tiles">
+      <div class="tile"><b>${recent.length}</b><span>reports, last ${PATTERN_DAYS} days</span></div>
+      <div class="tile"><b>${people}</b><span>responders affected</span></div>
+      <div class="tile"><b>${S.autoChecked}</b><span>misses checked automatically</span></div>
+      <div class="tile"><b>${S.autoNotDelivered}</b><span>pings never reached the phone</span></div>
+    </div>
+    <div class="two">
+      <div class="panel"><h3>By what went wrong</h3>${byIssue.map(([k,n])=>hb(ISSUES[k].h,n)).join('')}</div>
+      <div class="panel"><h3>By app version and phone</h3>${byDev.map(([k,n])=>hb(k,n)).join('')}</div>
+    </div>
+    <div class="panel"><h3>Reports ${S.filter?`· filtered ${B("filter-clear","Show all")}`:""}</h3>
+      <div class="scrollx"><table class="rtable"><thead><tr><th>ID</th><th>When</th><th>Responder</th><th>What went wrong</th><th>From</th><th>Phone</th></tr></thead>
+      <tbody>${rows.map(r=>`<tr class="${r.mine?'mine':''}"><td class="m">${r.id}</td><td class="m">${stamp(r.t)}</td><td>${r.responder}</td><td>${ISSUES[r.issue].h}${r.misses>1?` (${r.misses} misses)`:""}</td><td>${r.source}</td><td class="m">${r.app} · ${r.os}</td></tr>`).join('')}</tbody></table></div>
+    </div>
+    <p class="rule">Pattern rule: ${PATTERN_MIN_REPORTS} or more reports of the same problem on the same app version and phone type, from ${PATTERN_MIN_RESPONDERS} or more responders, within ${PATTERN_DAYS} days. Reports hold phone and app details only, never identity (Security Policy 4.1).</p>`;
+}
+function hint(){
+  const h=document.getElementById('hint');
+  if(S.mode==="today"){
+    h.textContent=S.mite.sunk
+      ?"Mite has dropped behind The Gale. Send more callouts: Mite's phone stays silent and Kip's console never says why."
+      :"Send a callout. In 4.2 it's a small banner. Press \"Mite doesn't answer\" four times (like Mite's release week) and see what happens next.";
+  } else {
+    if(S.mite.status==="checkin") h.textContent="Answer the check-in on Mite's phone, or skip ahead 4 days to see what happens with no answer.";
+    else if(S.mite.status==="away") h.textContent="Mite is away and Kip can see it. Tap \"Switch back on\" on Mite's phone.";
+    else if(S.mite.status==="back") h.textContent="Send a callout: it goes to Mite first again. Click Mite's card to see the ask order.";
+    else if(S.phone.view==="ping") h.textContent="Watch the phone escalate: buzz, then louder and flashing, then Kip is told if Mite hasn't looked. Click the phone to mark it seen.";
+    else h.textContent="Send callouts and watch Kip's console: place in line, tonight's pings, and a \"Needs you\" list. Try missing twice, or turning a few down on Mite's phone.";
+  }
+}
+function render(){
+  document.getElementById('m-today').setAttribute('aria-pressed',S.mode==="today");
+  document.getElementById('m-new').setAttribute('aria-pressed',S.mode==="new");
+  document.getElementById('clock-top').textContent=`${day(S.t)} · ${hhmm(S.t)}`;
+  document.getElementById('send').disabled=S.phone.view==="ping";
+  document.getElementById('noans').disabled=S.phone.view!=="ping";
+  const sb=document.getElementById('snd'); sb.setAttribute('aria-pressed',!!S.soundOn); sb.textContent=`Alert sound: ${S.soundOn?"on":"off"}`;
+  S.mite.sunk=S.mode==="today"&&order()[0]==="gale";
+  troubleView();
+  needs();
+  document.getElementById('cards').innerHTML=miteCard()+galeCard();
+  const f=document.getElementById('feed');
+  f.innerHTML=S.feed.length?S.feed.map(e=>`<li class="${e.fresh?'new':''}"><time>${stamp(e.t)}</time><span>${e.text}</span></li>`).join(''):`<li><time></time><span class="empty">No callouts yet. Use "Send an Eastgate callout" above.</span></li>`;
+  S.feed.forEach(e=>e.fresh=false);
+  drawer(); phone(); hint();
+}
+
+/* ================= Both phones tab ================= */
+/* Simplified: both are in Eastgate, so who gets asked first comes down to standing.
+   Standing numbers follow config.py (take +0.08, no -0.12). Live weights still unconfirmed. */
+const RULES={take:.08,pass:-.12,missToday:-.12,missNew:0,fade:.3};
+const ICONS={check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',pass:'<path d="M5 12h13M13 6l6 6-6 6"/>',
+  alert:'<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/>',
+  ask:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.4M12 16.8h.01"/>',
+  moon:'<path d="M19.5 14.5A8 8 0 1 1 9.5 4.5a6.5 6.5 0 0 0 10 10z"/>'};
+let D, dTimer=null, tab="console";
+function freshDuo(){
+  return {t:new Date(2026,7,12,22,10), standing:{mite:.5,gale:.5}, status:{mite:"on",gale:"on"},
+    run:{mite:0,gale:0}, last:{mite:null,gale:null}, view:{mite:"idle",gale:"idle"},
+    active:null, cur:null, queue:[], chain:[], hist:[], n:0};
+}
+function dOrder(){
+  const on=["mite","gale"].filter(k=>D.status[k]==="on")
+    .sort((a,b)=>(D.standing[b]-D.standing[a])||(a==="mite"?-1:1));
+  return on.concat(["mite","gale"].filter(k=>D.status[k]==="checkin"));
+}
+const dAdv=min=>{D.t=new Date(D.t.getTime()+min*60000)};
+const dStep=(text,cls)=>D.chain.push({t:new Date(D.t),text,cls});
+function dSend(){
+  if(D.active) return;
+  dAdv(30+Math.floor(Math.random()*40));
+  ["mite","gale"].forEach(k=>{if(["taken","passed","missed"].includes(D.view[k]))D.view[k]="idle"});
+  D.cur={name:INCIDENTS[D.n++%INCIDENTS.length],tried:[]};
+  D.queue=dOrder(); D.chain=[];
+  dStep(`${D.cur.name}, Eastgate. Asking in order of standing.`,"ask");
+  dOffer();
+}
+function dOffer(){
+  const who=D.queue.shift();
+  if(!who){
+    dStep("Nobody in Eastgate took it. Sent to neighbouring areas.","miss");
+    D.hist.unshift(`${D.cur.name}: nobody in Eastgate took it`);
+    D.active=null; renderDuo(); return;
+  }
+  D.cur.tried.push(who);
+  D.active={who,left:60,total:60,stage:1,extended:false};
+  D.view[who]="ping";
+  dStep(`Pinged ${NAMES[who]}.`,"ask");
+  if(S.mode==="new"){vibe(1);if(S.soundOn)beep(1)}
+  clearInterval(dTimer); dTimer=setInterval(dTick,160);
+  renderDuo();
+}
+function dTick(){
+  const a=D.active; if(!a){clearInterval(dTimer);return}
+  a.left--;
+  if(a.left<=0){dResolve(a.who,"missed");return}
+  if(S.mode==="new"){const st=stageFor(a.left); if(st!==a.stage){a.stage=st;vibe(st);renderDuo();return}}
+  const ph=document.getElementById("dp-"+a.who); if(!ph) return;
+  const n=ph.querySelector(".d-num"); if(n) n.textContent=a.left;
+  const pr=ph.querySelector(".d-prog"); if(pr) pr.style.strokeDashoffset=RING_C*(1-Math.min(1,a.left/a.total));
+  const rb=ph.querySelector(".d-bar"); if(rb) rb.style.width=Math.min(100,a.left/60*100)+"%";
+  const rt=ph.querySelector(".d-txt"); if(rt) rt.textContent=`${a.left}s to answer`;
+}
+function dResolve(who,kind){
+  clearInterval(dTimer); dAdv(1);
+  const name=D.cur.name, today=S.mode==="today";
+  const delta=kind==="taken"?RULES.take:kind==="passed"?RULES.pass:(today?RULES.missToday:RULES.missNew);
+  const before=D.standing[who];
+  D.standing[who]=Math.max(0,Math.min(1,before+delta));
+  D.last[who]={kind,delta};
+  D.active=null;
+  if(kind==="taken"){
+    D.run[who]=0; D.view[who]="taken";
+    dStep(`${NAMES[who]} took it.`,"ok");
+    const skipped=D.cur.tried.filter(k=>k!==who);
+    D.hist.unshift(`${name}: ${NAMES[who]} took it`+(skipped.length?` after ${skipped.map(k=>NAMES[k]).join(", ")} ${D.last[skipped[0]].kind}`:""));
+    renderDuo(); return;
+  }
+  if(kind==="missed"){
+    D.run[who]++;
+    dStep(today?`No answer from ${NAMES[who]} in 60s. Counted the same as a no.`:`No answer from ${NAMES[who]} in 60s. Not counted against them.`,"miss");
+    if(!today&&D.run[who]>=CHECKIN_AFTER){
+      D.status[who]="checkin"; D.view[who]="checkin";
+      dStep(`${NAMES[who]} missed ${D.run[who]} in a row. Check-in sent; they're asked last until they answer.`,"no");
+    } else D.view[who]=today?"idle":"missed";
+  } else {
+    dStep(`${NAMES[who]} passed. Counts as a no.`,"no");
+    D.view[who]="passed";
+  }
+  renderDuo();
+  setTimeout(dOffer,500);
+}
+function dMore(who){
+  const a=D.active; if(!a||a.who!==who||a.extended) return;
+  a.left+=30; a.total=Math.max(a.total,a.left); a.extended=true; a.stage=stageFor(a.left);
+  dStep(`${NAMES[who]} asked for 30 more seconds.`,"ask"); renderDuo();
+}
+function dCheckin(who,on){
+  D.status[who]=on?"on":"away"; D.run[who]=0; D.view[who]=on?"idle":"away";
+  dStep(on?`${NAMES[who]} checked in: on tonight. Back in line by standing.`:`${NAMES[who]} set themself to away.`,on?"ok":"no");
+  renderDuo();
+}
+function dNextDay(){
+  if(D.active) dResolve(D.active.who,"missed");
+  dAdv(24*60);
+  D.chain=[];
+  ["mite","gale"].forEach(k=>{if(["taken","passed","missed"].includes(D.view[k]))D.view[k]="idle"});
+  if(S.mode==="new"){
+    ["mite","gale"].forEach(k=>{const b=D.standing[k];D.standing[k]=b+(.5-b)*RULES.fade;D.last[k]={kind:"fade",delta:D.standing[k]-b}});
+    dStep("A day passes. Standing drifts 30% of the way back toward 0.50.","ask");
+  } else {
+    ["mite","gale"].forEach(k=>D.last[k]={kind:"fade",delta:0});
+    dStep("A day passes. In 4.2, standing never changes on its own.","no");
+  }
+  renderDuo();
+}
+const sign=v=>(v>0?"+":v<0?"−":"±")+Math.abs(v).toFixed(2);
+function dScreen(who){
+  const v=D.view[who], a=D.active, nm=D.cur?D.cur.name:"";
+  const scr=(icon,tone,title,sub,note)=>`<div class="scr"><span class="ic ${tone}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[icon]}</svg></span><strong class="s-title">${title}</strong>${sub?`<span class="s-sub">${sub}</span>`:""}${note?`<span class="s-note">${note}</span>`:""}</div>`;
+  const b=(act,label,cls="no")=>`<button type="button" class="${cls} big" data-d="${act}" data-who="${who}">${label}</button>`;
+  const other=NAMES[who==="mite"?"gale":"mite"];
+  if(v==="ping"&&a&&a.who===who){
+    if(S.mode==="today") return `<div class="notif"><span class="app-n">Rook Dispatch · callout</span><strong>${nm}, Eastgate</strong><span>6 min away</span><div class="ring"><i class="d-bar" style="width:${a.left/60*100}%"></i></div><span class="small d-txt">${a.left}s to answer</span></div>
+      <div class="pbtns"><button type="button" class="yes" data-d="take" data-who="${who}">Take it</button><button type="button" class="no" data-d="pass" data-who="${who}">Not this one</button></div>`;
+    return `<div class="alertscr stage-${a.stage}">
+      <div class="a-top"><span class="a-badge">Callout</span><span class="a-dnd">Breaks through silent mode</span></div>
+      <div class="a-timer"><span class="pulse"></span><span class="pulse p2"></span>
+        <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="trk"/><circle cx="60" cy="60" r="52" class="prog d-prog" stroke-dasharray="${RING_C}" stroke-dashoffset="${RING_C*(1-Math.min(1,a.left/a.total))}"/></svg>
+        <span class="a-num"><b class="d-num">${a.left}</b><small>sec</small></span></div>
+      <strong class="a-title">${nm}</strong>
+      <div class="a-chips"><span>Eastgate</span><span>${who==="mite"?"6":"9"} min</span></div>
+      <button type="button" class="a-take" data-d="take" data-who="${who}">Take it</button>
+      <div class="a-row"><button type="button" data-d="pass" data-who="${who}">Pass</button><button type="button" data-d="more" data-who="${who}"${a.extended?" disabled":""}>+30 sec</button></div>
+      <div class="a-ladder">${["Buzz","Louder","Handler told"].map((l,i)=>`<span class="${a.stage>i?"on":""}"><i></i>${l}</span>`).join("")}</div>
+    </div>`;
+  }
+  if(v==="taken") return scr("check","good","You're on it",nm,"Your handler has been told")+`<div class="pbtns">${b("ok","Done")}</div>`;
+  if(v==="passed") return scr("pass","calm","Passed","Sent to the next responder")+`<div class="pbtns">${b("ok","Done")}</div>`;
+  if(v==="missed") return scr("alert","warn","Missed",`${nm} moved on`,"Not held against you")+`<div class="pbtns">${b("ok","OK")}</div>`;
+  if(v==="checkin") return scr("ask","warn","Still on tonight?",`${D.run[who]||CHECKIN_AFTER} missed in a row`)+`<div class="pbtns">${b("on","Yes, I'm on","yes")}${b("off","Away for now")}</div>`;
+  if(v==="away") return scr("moon","calm","Away","No pings until you switch back on")+`<div class="pbtns">${b("on","Switch back on","yes")}</div>`;
+  const status=S.mode==="today"?"No callouts":"On tonight · Eastgate";
+  return `<div class="lock"><span class="clock">${hhmm(D.t)}</span><span class="date">${day(D.t)}</span><span class="status">${status}</span><span class="small">${a&&a.who!==who?"":""}</span></div>`;
+}
+function dStanding(who){
+  const s=D.standing[who], l=D.last[who], st=D.status[who];
+  let chip='<span class="delta zero">No change yet</span>';
+  if(l){
+    const what={taken:"took it",passed:"passed",missed:"missed",fade:"a day passed"}[l.kind];
+    const cls=l.delta>0.0005?"up":l.delta<-0.0005?"down":"zero";
+    chip=`<span class="delta ${cls}">${sign(l.delta)} · ${what}${l.kind==="missed"&&cls==="zero"?" (not counted)":""}</span>`;
+  }
+  const pos=dOrder().indexOf(who);
+  const where=st==="away"?"Away, not asked":st==="checkin"?"Asked last until they check in":pos===0?"Asked first":"Asked second";
+  return `<div class="standing">
+    <div class="row"><span class="nm">${NAMES[who]}</span><span class="val">${s.toFixed(2)}</span></div>
+    <div class="meter" title="Standing, 0 to 1. Line marks the 0.50 starting point."><i style="width:${s*100}%"></i><b></b></div>
+    ${chip}
+    <span class="meta2">${where}${S.mode==="new"&&D.run[who]?` · ${D.run[who]} missed in a row`:""}</span>
+  </div>`;
+}
+function renderDuo(){
+  ["mite","gale"].forEach(who=>{
+    const col=document.querySelector(`[data-col="${who}"]`);
+    const ringing=D.active&&D.active.who===who;
+    col.innerHTML=`<p class="where">${NAMES[who]}'s phone</p>
+      <div class="phone${ringing&&S.mode==="new"?" buzz"+(D.active.stage>1?" s"+D.active.stage:""):""}" id="dp-${who}"><div class="notch"></div><div class="ptop"><span>${hhmm(D.t)}</span><span>Rook</span></div><div class="screen">${dScreen(who)}</div></div>
+      <button type="button" class="pbtn" data-d="miss" data-who="${who}"${ringing?"":" disabled"}>${NAMES[who]} doesn't answer</button>
+      ${dStanding(who)}`;
+  });
+  // During a callout, show that callout's order (already asked + still to ask); otherwise the order for the next one
+  const tried=D.cur?D.cur.tried:[], act=D.active?D.active.who:null;
+  const order=act?tried.concat(D.queue):dOrder();
+  const q=order.map(k=>`<span class="q${k===act?" now":""}${D.active&&tried.includes(k)&&k!==act?" out":""}">${NAMES[k]}<small>${D.standing[k].toFixed(2)}</small></span>`).join('<span class="arr">→</span>');
+  const away=["mite","gale"].filter(k=>D.status[k]==="away").map(k=>NAMES[k]);
+  const today=S.mode==="today";
+  document.getElementById("duo-mid").innerHTML=`
+    <div class="panel"><h3>${act?"Asking order for this callout":"Who gets asked next, in order"}</h3>
+      <div class="queue">${q||'<span class="note">Nobody available</span>'}<span class="arr">→</span><span class="q">Neighbouring areas</span></div>
+      ${away.length?`<span class="note">${away.join(", ")} away</span>`:""}
+    </div>
+    <div class="panel"><h3>${D.cur?`This callout: ${D.cur.name}`:"This callout"}</h3>
+      ${D.chain.length?`<ol class="chain">${D.chain.map(c=>`<li class="c-${c.cls}"><time>${hhmm(c.t)}</time>${c.text}</li>`).join("")}</ol>`:`<p class="note">Press "Send an Eastgate callout". It goes to whoever is first, then hands off if they pass or don't answer.</p>`}
+    </div>
+    <div class="panel"><h3>The rules in each version</h3>
+      <div class="scrollx"><table class="rules"><thead><tr><th></th><th>Take</th><th>Pass</th><th>No answer</th><th>Over time</th></tr></thead><tbody>
+        <tr class="${today?"cur":""}"><td>4.2 today</td><td>+0.08</td><td>−0.12</td><td>−0.12, same as a pass</td><td>Never changes</td></tr>
+        <tr class="${today?"":"cur"}"><td>With the changes</td><td>+0.08</td><td>−0.12</td><td>Not counted; check-in after 3 in a row</td><td>Drifts back to 0.50</td></tr>
+      </tbody></table></div>
+      <p class="note">Simplified: both responders are in Eastgate, so the order comes down to standing. Points match the routing code; the live values are still to be confirmed by Wen.</p>
+    </div>
+    ${D.hist.length?`<div class="panel"><h3>Earlier callouts</h3><ul class="hist">${D.hist.map(h=>`<li>${h}</li>`).join("")}</ul></div>`:""}`;
+  document.getElementById("d-send").disabled=!!D.active;
+}
+document.getElementById("tab-duo").addEventListener("click",e=>{
+  const el=e.target.closest("[data-d]"); if(!el||el.disabled) return;
+  const who=el.dataset.who, a=el.dataset.d;
+  if(a==="take") dResolve(who,"taken");
+  else if(a==="pass") dResolve(who,"passed");
+  else if(a==="miss"){if(D.active&&D.active.who===who) dResolve(who,"missed")}
+  else if(a==="more") dMore(who);
+  else if(a==="on") dCheckin(who,true);
+  else if(a==="off") dCheckin(who,false);
+  else if(a==="ok"){D.view[who]="idle";renderDuo()}
+});
+document.getElementById("d-send").onclick=dSend;
+document.getElementById("d-day").onclick=dNextDay;
+document.getElementById("d-reset").onclick=()=>{clearInterval(dTimer);D=freshDuo();renderDuo()};
+function showTab(t){
+  tab=t;
+  document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+  document.getElementById('tab-console').hidden=t!=="console";
+  document.getElementById('tab-duo').hidden=t!=="duo";
+  document.getElementById('tab-team').hidden=t!=="team";
+  ["send","noans","skip","reset"].forEach(id=>document.getElementById(id).hidden=t!=="console");
+  const h=document.getElementById('hint');
+  if(t==="team") h.textContent="This is what Rook's product, engineering and support teams would watch. Reports come from handlers and responders in the console tab.";
+  else if(t==="duo") h.textContent=S.mode==="new"
+    ?"Send a callout, then pass or let it run out on one phone to see it hand off. A miss doesn't move standing; a pass does. Try \"Next day\" to see standing drift back."
+    :"Send a callout and let Mite's run out twice. Each miss costs the same as a pass, and The Gale moves to the front for good.";
+  else hint();
+  renderDuo();
+}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+
+function setMode(m){clearInterval(timer);const v=S?S.view:"coverage",snd=S?S.soundOn:false;S=fresh(m);S.view=v;S.soundOn=snd;clearInterval(dTimer);D=freshDuo();render();showTab(tab)}
+document.getElementById('m-today').onclick=()=>setMode("today");
+document.getElementById('m-new').onclick=()=>setMode("new");
+document.getElementById('send').onclick=sendCallout;
+document.getElementById('skip').onclick=skipAhead;
+document.getElementById('noans').onclick=()=>{if(S.phone.view==="ping")answer("missed")};
+document.getElementById('snd').onclick=()=>{S.soundOn=!S.soundOn;if(S.soundOn)beep(1);render()};
+document.getElementById('reset').onclick=()=>setMode(S.mode);
+document.getElementById('v-trouble').onclick=e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const a=b.dataset.act;
+  if(a.startsWith("filter:")) S.filter=a.slice(7); else if(a==="filter-clear") S.filter=null;
+  render();
+};
+document.getElementById('needs').onclick=e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const a=b.dataset.act;
+  if(a.startsWith("open:")){S.drawer=a.slice(5);render();return}
+  if(a==="report-open"){act(a);document.querySelector('.card[data-id="mite"]').scrollIntoView({block:"nearest"});return}
+  act(a);
+};
+document.getElementById('night').onclick=e=>{
+  const w=document.querySelector('#tab-console .window'), on=!w.classList.contains('night');
+  w.classList.toggle('night',on); e.currentTarget.setAttribute('aria-pressed',on);
+};
+document.getElementById('cards').onclick=e=>{
+  const p=e.target.closest('[data-pick]'); if(p){S.pick=p.dataset.pick;render();return}
+  const b=e.target.closest('[data-act]'); if(b){act(b.dataset.act);return}
+  if(e.target.closest('.acts')) return;
+  const c=e.target.closest('.card'); if(c){S.drawer=S.drawer===c.dataset.id?null:c.dataset.id;render()}
+};
+document.querySelectorAll('.nav-x').forEach(b=>b.onclick=()=>toast("Only Coverage is built in this prototype."));
+setMode("new");
+</script>
+</body>
+</html>
