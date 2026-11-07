@@ -1,37 +1,39 @@
 # Back in Rotation
 
 *Rook Dispatch · Brief for Helen · Draft*
-From: Dispatch PM · 7 Nov 2026 · Proposal, nothing built
+From: Dianne, Rook Dispatch PM (owner of this brief) · 7 Nov 2026 · Proposal, nothing built
 
 Since 4.2, four of our 16 responders have been almost entirely dropped from rotation, and nobody can see it happening, including the responders. This brief proposes what they and their handlers should experience instead, using Meteor Mite and Kip as the example.
 
-Clickable version: https://claude.ai/artifact/73RjV71Ta1qGwPA3BzjjtL
+**What I need from you:** hold the quick fix (a small scoring change engineering could ship today) now, then make one policy call and find a release slot by Fri 20 Nov, when I bring my recommendation. Details below, after what happened.
 
----
-
-## What I need from you
-
-1. **Agreed on not shipping the quick fix.** There's also a second reason: we don't yet know which scoring numbers are running in production, so changing one could miss. Wen can confirm this week.
-2. **Make the policy call:** a missed ping should not count as a "no," and a bad stretch should fade over time unless the responder tells us they're away. Nobody has ever decided this. It has been an open question in the code since 2019.
-3. **Find it a release slot.** Phase 1 is small. Phase 2 needs engineering and design time and competes with Q4 work. It also overlaps Availability Confidence, one of the Q3 items squeezed out of 4.2 that is now overdue.
-
-Meanwhile, at no cost: I'll contact the four affected handlers directly. None of them have filed tickets.
+Clickable version: https://claude.ai/artifact/73RjV71Ta1qGwPA3BzjjtL (also in the course folder as `05-super-speed/prototype.html`)
 
 ---
 
 ## What happened: a reliable responder went silent in three weeks
 
-Before 4.2, Meteor Mite was asked about 11 times a week, said yes about 70% of the time, and hadn't missed a ping since June. 4.2 cut the time to answer from 90 to 60 seconds. Mite missed 4 of 10 pings that week. The system counts a miss as a "no," and scores never recover on their own, so Mite moved to the back of the line and stopped being asked. By 31 Aug, Mite was getting 1 ping a week. The Gale, in the same area, was getting 21.
+Before 4.2, Meteor Mite was asked about 11 times a week, said yes about 70% of the time, and had missed only 2 pings in the six weeks before. 4.2 cut the time to answer from 90 to 60 seconds. Mite missed 4 of 10 pings that week. The system counts a miss as a "no," and scores never recover on their own, so Mite moved to the back of the line and stopped being asked. By 31 Aug, Mite was getting 1 ping a week. The Gale, in the same area, was getting 21.
 
 Kip, their handler (4 Sep): Mite keeps texting to ask if something is broken, while The Gale is exhausted. Kip has nothing to tell either of them. Farlight, The Undertow and Vesper followed the same path.
 
 **Why it matters beyond these four:** we bill per active responder, so a responder who stops getting work is likely to become one we stop billing for. Callouts nobody took have also roughly doubled since 4.2.
 
-**How sure we are:** the pattern in the data is strong. All four sank right after their release-week misses, and neither a seasonal dip nor past turn-downs explain who sank. The exact mechanism is unconfirmed until Wen answers, because scores rebuilt from the code don't fully match who sank.
+**How sure we are:** the pattern in the data is strong. All four sank right after their release-week misses, and neither a seasonal dip nor past turn-downs explain who sank. The exact mechanism is unconfirmed until Wen Li (staff engineer, who built routing) answers, because scores rebuilt from the code don't fully match who sank.
 
-**How current this is:** our data stops on 6 Sep. We don't know whether the four are still this quiet two months later. I'll ask Ravi for October numbers by Fri 13 Nov.
+**How current this is:** our data stops on 6 Sep. We don't know whether the four are still this quiet two months later. I'll ask Ravi Menon (data analyst, owns our numbers) for October numbers by Fri 13 Nov.
 
 *Source: pings table, 29 Jun to 6 Sep; Kip interview, 4 Sep. The billing risk is my inference and has not been measured.*
+
+---
+
+## What I need from you
+
+1. **Agree to hold the quick fix (now).** Engineering says a small scoring change could ship this afternoon. I'd rather not: it would quietly change a number without deciding how misses should count, and nothing would change on Kip's or Mite's screens. Also, we don't yet know which scoring numbers are running in production, so changing one could miss. Wen can confirm by Fri 13 Nov.
+2. **Make the policy call (by Fri 20 Nov):** a missed ping should not count as a "no," and a bad stretch should fade over time unless the responder tells us they're away. Nobody has ever decided this. It has been an open question in the code since 2019.
+3. **Find it a release slot (by Fri 20 Nov).** Phase 1 is small. Phase 2 needs engineering and design time and competes with Q4 work. It also overlaps Availability Confidence, one of the Q3 items squeezed out of 4.2 that is now overdue.
+
+Meanwhile, at no cost: I'll contact the four affected handlers directly. None of them have filed tickets.
 
 ---
 
@@ -83,9 +85,11 @@ Weekly pings to Meteor Mite, Farlight, The Undertow and Vesper combined. "Actual
 
 ## How we'd know it worked
 
-- The four are back to about 10 to 12 pings a week within 4 weeks of launch.
-- Callouts nobody took fall back to pre-4.2 levels.
-- Guardrail: The Gale and the other covering responders return to normal load, and overall acceptance (73% now) holds.
+- The four are back to about 10 to 12 pings a week each (45 to 50 combined) within 4 weeks of launch.
+- Callouts nobody took fall back to about 7 a week (about 5% of callouts), the pre-4.2 average, within 4 weeks of launch. Since 4.2 it has been about 13 a week. This one also depends on things outside this brief (the 60-second wait, and why the search stops after one ping), so treat it as a supporting signal, not proof the fix worked.
+- Guardrail: The Gale and the other covering responders return to their pre-4.2 load (about 13 pings a week for The Gale, against 21 in the week of 31 Aug), and overall acceptance holds at 73% (the latest figure, from data to 6 Sep).
+
+*Ravi tracks all three in his weekly report.*
 
 ---
 
@@ -96,10 +100,10 @@ Weekly pings to Meteor Mite, Farlight, The Undertow and Vesper combined. "Actual
 | Wen | Which scoring numbers are actually running? A score rebuilt from the code doesn't match who sank. | Fri 13 Nov |
 | Wen | Why do most unanswered callouts stop after one ping, when the code is supposed to keep asking down the list? | Fri 13 Nov |
 | Ravi | Are the four still this quiet? Our data stops on 6 Sep; we need October. | Fri 13 Nov |
-| Marcus | Rough size of Phase 1 and Phase 2. Saving scores is new work. | Wed 18 Nov |
+| Marcus Oyelaran (engineering manager, Dispatch) | Rough size of Phase 1 and Phase 2. Saving scores is new work. | Wed 18 Nov |
 
 If Wen can't make time this week, I'll need your help freeing it up. She's the only person who knows how routing works.
 
 **I'll come back with a recommendation and a size estimate by Fri 20 Nov.**
 
-*Also lined up: value tuning with Ravi, testing the phone messages with responders through Sofia, and Supply and Security reviews of the new "away" status. Not in scope: the 60-second wait itself (a separate decision) and cross-area cover (Q4).*
+*Also lined up: value tuning with Ravi, testing the phone messages with responders through Sofia Marino (product designer), and Supply and Security reviews of the new "away" status. Not in scope: the 60-second wait itself (a separate decision) and cross-area cover (Q4).*
