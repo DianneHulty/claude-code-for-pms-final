@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Release 4.2 Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f6f5f2; --surface:#fcfcfb; --surface-2:#efeee9; --ink:#0b0b0b; --ink-2:#52514e; --muted:#7a7974;
+  --line:#e2e0da; --grid:#ebe9e4;
+  --s1:#2a78d6; --s1-soft:#e3eefb; --s2:#eb6834; --s2-soft:#fdeae1;
+  --good:#1a7f37; --good-soft:#e2f3e6; --warn:#a15c00; --warn-soft:#fbf0dc;
+  --hero:#121417; --hero-ink:#f4f3ef; --hero-ink-2:#b7b6b0;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#121211; --surface:#1a1a19; --surface-2:#232321; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#8f8e88;
+    --line:#2f2f2c; --grid:#2a2a28;
+    --s1:#3987e5; --s1-soft:#1b2a3d; --s2:#d95926; --s2-soft:#3a2219;
+    --good:#4ac26b; --good-soft:#18301f; --warn:#e3a33b; --warn-soft:#352a16;
+    --hero:#0b0c0d; --hero-ink:#f4f3ef; --hero-ink-2:#a9a8a2;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#121211; --surface:#1a1a19; --surface-2:#232321; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#8f8e88;
+  --line:#2f2f2c; --grid:#2a2a28;
+  --s1:#3987e5; --s1-soft:#1b2a3d; --s2:#d95926; --s2-soft:#3a2219;
+  --good:#4ac26b; --good-soft:#18301f; --warn:#e3a33b; --warn-soft:#352a16;
+  --hero:#0b0c0d; --hero-ink:#f4f3ef; --hero-ink-2:#a9a8a2;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Inter Tight",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+code,.mono{font-family:"JetBrains Mono",ui-monospace,Consolas,monospace}
+a{color:var(--s1)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+section{padding:72px 0;border-top:1px solid var(--line)}
+.eyebrow{font:500 12px/1 "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+h1,h2,h3{line-height:1.12;letter-spacing:-.02em;margin:0}
+h2{font-size:clamp(28px,4vw,40px);font-weight:800;max-width:22ch}
+h3{font-size:19px;font-weight:700}
+.lede{font-size:clamp(17px,2vw,20px);color:var(--ink-2);max-width:62ch;margin:16px 0 0}
+p{max-width:68ch}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* nav */
+nav.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav.top .wrap{display:flex;align-items:center;gap:6px;height:52px;overflow-x:auto;scrollbar-width:none}
+nav.top .brand{font-weight:800;margin-right:12px;white-space:nowrap}
+nav.top a{color:var(--ink-2);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:8px;white-space:nowrap}
+nav.top a:hover,nav.top a.on{background:var(--surface-2);color:var(--ink)}
+.theme-btn{margin-left:auto;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:8px;padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+
+/* hero */
+.hero{background:var(--hero);color:var(--hero-ink);padding:88px 0 72px;border:0}
+.hero .eyebrow{color:var(--hero-ink-2)}
+.hero h1{font-size:clamp(36px,6vw,64px);font-weight:800;max-width:17ch}
+.hero h1 em{font-style:normal;color:#ff8a5b}
+.hero .lede{color:var(--hero-ink-2)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:44px}
+.stat{border:1px solid #2a2c30;border-radius:14px;padding:18px 18px 16px;background:#17191c}
+.stat .big{font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.stat .big .arrow{color:var(--hero-ink-2);font-weight:500;margin:0 6px;font-size:28px}
+.stat .lab{color:var(--hero-ink-2);font-size:14px;margin-top:8px}
+.stat .hot{color:#ff8a5b}
+
+/* card + chart */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:22px}
+.chart-card{margin-top:28px}
+.chart-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:6px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:14px;height:3px;border-radius:2px;display:inline-block}
+.legend i.dash{background:repeating-linear-gradient(90deg,currentColor 0 4px,transparent 4px 7px)!important;height:2px}
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:10px;padding:8px 10px;font-size:13px;min-width:150px;opacity:0;transition:opacity .12s;z-index:5}
+.tip b{display:block;margin-bottom:4px}
+.tip .row{display:flex;justify-content:space-between;gap:12px;color:var(--ink-2)}
+.tip .row span:first-child{display:inline-flex;align-items:center;gap:6px}
+.tip .sw{width:8px;height:8px;border-radius:50%;display:inline-block}
+details.tv{margin-top:10px;font-size:13px;color:var(--ink-2)}
+details.tv summary{cursor:pointer;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--ink-2);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.source{font-size:12.5px;color:var(--muted);margin-top:10px}
+
+/* chain diagram */
+.chain{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:36px;position:relative}
+.step{position:relative;padding:18px 16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-right:22px}
+.step:last-child{margin-right:0}
+.step:not(:last-child)::after{content:"";position:absolute;right:-17px;top:50%;width:12px;height:12px;border-top:2px solid var(--muted);border-right:2px solid var(--muted);transform:translateY(-50%) rotate(45deg)}
+.step .num{font:500 12px "JetBrains Mono",monospace;color:var(--muted)}
+.step h3{font-size:16px;margin:8px 0 6px}
+.step p{font-size:14px;color:var(--ink-2);margin:0}
+.step .tag{display:inline-block;margin-top:10px;font:500 11.5px "JetBrains Mono",monospace;padding:3px 7px;border-radius:6px;background:var(--surface-2);color:var(--ink-2)}
+.step.new{border-color:var(--s2)}
+.step.new .tag{background:var(--s2-soft);color:var(--s2)}
+.step.old .tag{background:var(--warn-soft);color:var(--warn)}
+.loop{margin-top:16px;display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px dashed var(--s2);border-radius:12px;color:var(--ink-2);font-size:14.5px;background:var(--s2-soft)}
+.loop svg{flex:none}
+.keylegend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:13px;color:var(--ink-2)}
+.keylegend span{display:inline-flex;align-items:center;gap:6px}
+.keylegend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+.callout{margin-top:28px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;padding:16px 18px;border-radius:14px;background:var(--s1-soft);border:1px solid color-mix(in srgb,var(--s1) 30%,transparent)}
+.callout .ic{width:28px;height:28px;border-radius:8px;background:var(--s1);color:#fff;display:grid;place-items:center;font-weight:800}
+.callout p{margin:0;color:var(--ink)}
+
+/* modules */
+.track{position:relative;margin-top:40px}
+.track::before{content:"";position:absolute;left:23px;top:8px;bottom:8px;width:2px;background:var(--line)}
+.mod{position:relative;display:grid;grid-template-columns:48px 1fr;gap:18px;margin-bottom:26px}
+.mod .dot{width:48px;height:48px;border-radius:50%;background:var(--surface);border:2px solid var(--line);display:grid;place-items:center;font-weight:800;font-size:16px;z-index:1}
+.mod.lit .dot{border-color:var(--s1);color:var(--s1)}
+.mod .card{padding:0;overflow:hidden}
+.mod-top{padding:20px 22px 6px}
+.mod-top .meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font:500 12px "JetBrains Mono",monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.mod-top h3{font-size:22px;margin-top:10px;max-width:40ch}
+.mod-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:0;border-top:1px solid var(--line);margin-top:16px}
+.mod-grid > div{padding:18px 22px;min-width:0}
+.mod > *{min-width:0}
+.prompt{overflow-wrap:anywhere}
+.mod-grid > div + div{border-left:1px solid var(--line);background:var(--surface-2)}
+.label{font:500 11px "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px}
+.prompt{position:relative;font:14px/1.55 "JetBrains Mono",monospace;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px 12px 12px 4px;padding:14px 14px 12px}
+.prompt .pn{display:block;font-size:11px;color:var(--muted);margin-bottom:6px}
+.facts{margin:0;padding:0;list-style:none}
+.facts li{padding:6px 0 6px 18px;position:relative;font-size:15px;color:var(--ink-2)}
+.facts li::before{content:"";position:absolute;left:2px;top:14px;width:7px;height:7px;border-radius:2px;background:var(--s1)}
+.facts li strong{color:var(--ink)}
+.kpi{display:flex;align-items:baseline;gap:10px;margin:2px 0 10px}
+.kpi .v{font-size:34px;font-weight:800;letter-spacing:-.03em}
+.kpi .v.o{color:var(--s2)}
+.kpi .d{font-size:14px;color:var(--ink-2)}
+pre.code{margin:0;font:12.5px/1.6 "JetBrains Mono",monospace;background:var(--hero);color:#d9d8d2;border-radius:10px;padding:12px 14px;overflow-x:auto}
+pre.code .c{color:#8a8f98}
+pre.code .h{background:rgba(255,138,91,.18);color:#ffb08f;border-radius:3px}
+.weekstrip{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:6px}
+.wk{border-radius:10px;padding:8px 6px;text-align:center;background:var(--surface);border:1px solid var(--line)}
+.wk .w{font-size:11px;color:var(--muted)}
+.wk .p{font-size:20px;font-weight:800}
+.wk .bar{height:5px;border-radius:3px;background:var(--grid);margin:6px 2px 4px;overflow:hidden}
+.wk .bar span{display:block;height:100%;background:var(--s2);border-radius:3px}
+.wk .m{font-size:11px;color:var(--ink-2)}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin:0;padding:0;list-style:none}
+.checks li{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--ink-2)}
+.checks .b{flex:none;width:18px;height:18px;border-radius:5px;display:grid;place-items:center;font-size:12px;font-weight:800;margin-top:2px}
+.b.pass{background:var(--good-soft);color:var(--good)}
+.b.fail{background:var(--s2-soft);color:var(--s2)}
+
+/* replay */
+.replay{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:28px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;padding:3px;background:var(--surface-2)}
+.seg button{border:0;background:transparent;font:inherit;font-size:14px;padding:7px 12px;border-radius:7px;color:var(--ink-2);cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-weight:600}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:14px;font-weight:600;padding:9px 14px;border-radius:10px;cursor:pointer}
+.btn:hover{border-color:var(--ink-2)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.ghost{color:var(--muted);font-weight:500}
+.lane{margin-top:18px}
+.racer{display:grid;grid-template-columns:110px 1fr 54px;gap:10px;align-items:center;margin:10px 0}
+.racer .nm{font-weight:700;font-size:14px}
+.racer .nm small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.racer .track2{height:14px;background:var(--grid);border-radius:7px;overflow:hidden}
+.racer .fill{height:100%;border-radius:7px;transition:width .45s cubic-bezier(.2,.7,.2,1)}
+.racer .sc{font:500 13px "JetBrains Mono",monospace;text-align:right}
+.first{display:inline-block;font:600 11px "JetBrains Mono",monospace;padding:2px 6px;border-radius:5px;background:var(--good-soft);color:var(--good);margin-left:6px;vertical-align:1px}
+.log{margin-top:14px;max-height:190px;overflow:auto;font-size:13.5px;border-top:1px solid var(--line)}
+.log div{padding:7px 0;border-bottom:1px solid var(--line);color:var(--ink-2)}
+.log div b{color:var(--ink)}
+.status{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:14.5px;background:var(--surface-2)}
+.status.bad{background:var(--s2-soft)}
+.status.ok{background:var(--good-soft)}
+.phone-ask{margin-top:12px;padding:14px;border-radius:14px;background:var(--hero);color:var(--hero-ink);display:none}
+.phone-ask.show{display:block;animation:pop .3s ease}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+
+/* prototype */
+.proto{margin-top:28px;border-radius:18px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--surface)}
+.proto-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--surface-2);font-size:13px;color:var(--ink-2)}
+.proto-bar .dots{display:flex;gap:6px;margin-right:6px}
+.proto-bar .dots i{width:10px;height:10px;border-radius:50%;background:var(--line);display:block}
+.proto-bar a{margin-left:auto}
+.proto iframe{display:block;width:100%;height:760px;border:0;background:#fff}
+.changes{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px}
+.chg{padding:18px}
+.chg .ph{font:500 11px "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.06em;padding:3px 7px;border-radius:5px;display:inline-block}
+.chg .ph.p1{background:var(--s1-soft);color:var(--s1)}
+.chg .ph.p2{background:var(--surface-2);color:var(--ink-2)}
+.chg h3{font-size:17px;margin:12px 0 6px}
+.chg p{font-size:14px;color:var(--ink-2);margin:0}
+.chg .who{margin-top:10px;font-size:12.5px;color:var(--muted)}
+.tabsgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.tabsgrid .card{padding:16px}
+.tabsgrid h3{font-size:16px}
+.tabsgrid p{font-size:14px;color:var(--ink-2);margin:6px 0 10px}
+.tabsgrid .prompt{font-size:12.5px;padding:10px 12px}
+
+/* skill */
+.maptable td:first-child{font-weight:600;width:24%}
+.maptable td:nth-child(2){color:var(--ink-2)}
+.maptable td:nth-child(3){width:30%}
+.pill{display:inline-block;font:500 11.5px "JetBrains Mono",monospace;padding:3px 7px;border-radius:6px;background:var(--s2-soft);color:var(--s2);white-space:nowrap}
+.score-ring{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.todo{list-style:none;padding:0;margin:0}
+.todo li{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:var(--ink-2)}
+.todo li:last-child{border:0}
+.todo input{margin-top:4px;accent-color:var(--s1)}
+.todo b{color:var(--ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:28px}
+.next td.when{white-space:nowrap;font-variant-numeric:tabular-nums}
+footer{padding:40px 0 60px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+@media (max-width:900px){
+  .chain{grid-template-columns:1fr}
+  .step{margin:0 0 22px 0}
+  .step:not(:last-child)::after{right:auto;left:50%;top:auto;bottom:-17px;transform:translateX(-50%) rotate(135deg)}
+  .mod-grid,.replay,.two{grid-template-columns:minmax(0,1fr)}
+  .mod-grid > div + div{border-left:0;border-top:1px solid var(--line)}
+  .changes{grid-template-columns:1fr 1fr}
+  .tabsgrid{grid-template-columns:1fr}
+  .checks{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  section{padding:52px 0}
+  .changes{grid-template-columns:1fr}
+  .track::before{left:17px}
+  .mod{grid-template-columns:36px 1fr;gap:10px}
+  .mod .dot{width:36px;height:36px;font-size:14px}
+  .proto iframe{height:640px}
+  .racer{grid-template-columns:84px 1fr 46px}
+  .weekstrip{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+  .wk .p{font-size:16px}
+}
+</style>
+</head>
+<body>
+
+<nav class="top" aria-label="Sections">
+  <div class="wrap">
+    <span class="brand">Rook Dispatch · 4.2</span>
+    <a href="#what">What happened</a>
+    <a href="#evidence">Evidence</a>
+    <a href="#fix">The fix</a>
+    <a href="#prevent">Keeping it fixed</a>
+    <a href="#next">Next</a>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Toggle light or dark theme">Theme</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Final report · Claude Code for PMs · Rook Dispatch · 7 Nov 2026</p>
+    <h1>Release 4.2 quietly pushed <em>four reliable responders</em> out of rotation.</h1>
+    <p class="lede">4.2 gave responders 60 seconds to answer a ping instead of 90. They missed more. Our routing counts a missed ping exactly like a "no" and never lets it fade. So Meteor Mite, Farlight, The Undertow and Vesper slid to the back of the line within days, stopped being asked, and had no way back.</p>
+    <div class="stats">
+      <div class="stat"><div class="big">49<span class="arrow">→</span><span class="hot">3</span></div><div class="lab">pings a week to the four, week of 3 Aug vs. week of 31 Aug</div></div>
+      <div class="stat"><div class="big">3%<span class="arrow">→</span><span class="hot">59%</span></div><div class="lab">share of their pings missed, before vs. after 12 Aug</div></div>
+      <div class="stat"><div class="big">40<span class="arrow">→</span><span class="hot">107</span></div><div class="lab">support tickets, 6 weeks before vs. 4 weeks after 4.2</div></div>
+      <div class="stat"><div class="big">0</div><div class="lab">tickets about Meteor Mite or Vesper, the two worst hit. Their handlers never filed.</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- WHAT HAPPENED -->
+<section id="what">
+  <div class="wrap">
+    <p class="eyebrow">01 · What happened</p>
+    <h2>One number changed. It switched on a rule that was already there.</h2>
+    <p class="lede">4.2 didn't add a bad rule. It shortened the wait, and that exposed an old one: a missed ping costs as much as a turn-down, and the cost never wears off.</p>
+
+    <div class="chain reveal" role="list" aria-label="How four responders dropped out of rotation">
+      <div class="step new" role="listitem"><span class="num">1 · 12 Aug</span><h3>Wait cut to 60s</h3><p>A ping now leaves the phone after 60 seconds, down from 90.</p><span class="tag">new in 4.2</span></div>
+      <div class="step new" role="listitem"><span class="num">2 · that week</span><h3>Misses jump</h3><p>The four miss 17 of 43 pings. Before 4.2 they missed 1–3 a week.</p><span class="tag">result of 4.2</span></div>
+      <div class="step old" role="listitem"><span class="num">3 · each miss</span><h3>A miss = a "no"</h3><p>Every miss takes −0.12 off standing. A take only adds +0.08.</p><span class="tag">rule since 2019</span></div>
+      <div class="step old" role="listitem"><span class="num">4 · ~48 hours</span><h3>Back of the line</h3><p>Closer responders lose their place to neighbours. Eastgate's first ping goes to The Gale.</p><span class="tag">no fade, no reset</span></div>
+      <div class="step new" role="listitem"><span class="num">5 · by 31 Aug</span><h3>Never asked</h3><p>Pings fall to 3 a week. You can't win back standing if you're never asked.</p><span class="tag">the trap</span></div>
+    </div>
+    <div class="loop reveal">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></svg>
+      <span><b>Why it never recovered on its own:</b> standing only goes up when you take a job, and you only get a job when you're asked. Once behind, a responder stays behind.</span>
+    </div>
+    <div class="keylegend"><span><i style="background:var(--s2)"></i>Changed or caused by 4.2</span><span><i style="background:var(--warn)"></i>Old rule, unchanged since 2019</span></div>
+
+    <div class="card chart-card reveal">
+      <div class="chart-head">
+        <div><h3>Pings a week: the four vs. everyone else</h3><p class="small muted" style="margin:4px 0 0">Everyone else picked up the work the four stopped getting.</p></div>
+        <div class="legend"><span><i style="background:var(--s2)"></i>The four (Meteor Mite, Farlight, The Undertow, Vesper)</span><span><i style="background:var(--s1)"></i>The other 12 responders</span></div>
+      </div>
+      <div class="chart" id="chartGroups"></div>
+      <details class="tv"><summary>Show as table</summary><div id="tblGroups"></div></details>
+      <p class="source">Source: rook-database <code>pings</code>, weeks starting Monday, 29 Jun – 6 Sep 2026. Hover the chart for exact counts.</p>
+    </div>
+
+    <div class="card chart-card reveal">
+      <div class="chart-head">
+        <div><h3>Same neighbourhood, opposite fates: Meteor Mite vs. The Gale (Eastgate)</h3><p class="small muted" style="margin:4px 0 0">Mite missed 4 of 10 pings in release week. By 31 Aug, Mite got 1 ping and The Gale got 21.</p></div>
+        <div class="legend"><span><i style="background:var(--s2)"></i>Meteor Mite</span><span><i style="background:var(--s1)"></i>The Gale</span></div>
+      </div>
+      <div class="chart" id="chartPair"></div>
+      <details class="tv"><summary>Show as table</summary><div id="tblPair"></div></details>
+      <p class="source">Source: rook-database <code>pings</code>. Kip handles both. On 4 Sep Kip said Mite keeps asking if something is broken, while The Gale is exhausted.</p>
+    </div>
+
+    <div class="callout reveal"><div class="ic">!</div><p><b>Why nobody saw it:</b> the headline acceptance rate went <em>up</em>, 54% → 73%, because the people still being asked say yes. The average hid four people, and the two worst-hit handlers never filed a ticket. Priya's "August is always soft" explanation can't be tested: the data starts on 29 Jun, and the order of events (misses first, then lost pings) doesn't fit a seasonal dip anyway.</p></div>
+  </div>
+</section>
+
+<!-- EVIDENCE -->
+<section id="evidence">
+  <div class="wrap">
+    <p class="eyebrow">02 · How I found it</p>
+    <h2>Six modules, six findings, and the prompt behind each one.</h2>
+    <p class="lede">Each card shows one finding and the exact prompt I wrote that produced it, copied as written from that module's <code>prompts.md</code>.</p>
+
+    <div class="track">
+
+      <article class="mod lit reveal">
+        <div class="dot">1</div>
+        <div class="card">
+          <div class="mod-top">
+            <div class="meta"><span>Module 1 · Origin Story</span><span>·</span><span>wiki + DB + repo</span></div>
+            <h3>One cause explains the biggest share of complaints: the 60-second wait combined with a miss counted as a "no".</h3>
+          </div>
+          <div class="mod-grid">
+            <div>
+              <div class="label">Finding</div>
+              <ul class="facts">
+                <li>Explains <strong>~35 of the 107</strong> tickets filed since 4.2, and <strong>all 4</strong> customer interviews.</li>
+                <li>The four went from about <strong>12 pings a week to 3–4</strong>. Their home callouts went to neighbours instead.</li>
+                <li>Their miss rate went from <strong>2.9% to 58.9%</strong> of pings.</li>
+              </ul>
+              <p class="source">Sources: support_tickets, pings, 4 interviews, wiki 4.2 page.</p>
+            </div>
+            <div>
+              <div class="label">My prompt · 01-origin-story #4</div>
+              <div class="prompt">Act as a senior incident investigator, analyze all available context and determine what underlying problem explains the largest percentage of reported symptoms.</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="mod lit reveal">
+        <div class="dot">2</div>
+        <div class="card">
+          <div class="mod-top">
+            <div class="meta"><span>Module 2 · Super Hearing</span><span>·</span><span>pings week by week</span></div>
+            <h3>The misses came first. The pings disappeared after. That order points to the scoring, not a seasonal dip.</h3>
+          </div>
+          <div class="mod-grid">
+            <div>
+              <div class="label">The four, week by week (pings · share missed · taken)</div>
+              <div class="weekstrip" id="weekstrip"></div>
+              <p class="source">Source: pings, weeks starting 3 Aug – 31 Aug. Everyone else's miss rate also rose, to 10–18%, but they kept getting asked.</p>
+            </div>
+            <div>
+              <div class="label">My prompt · 02-super-hearing #6</div>
+              <div class="prompt">run the week-by-week test in the pings data: misses vs pings received for the responders who went quiet and the ones who gained.</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="mod lit reveal">
+        <div class="dot">3</div>
+        <div class="card">
+          <div class="mod-top">
+            <div class="meta"><span>Module 3 · Rewind</span><span>·</span><span>timing across all 16</span></div>
+            <h3>Every responder's first post-4.2 miss fell in the same four days. The release is the only thing they share.</h3>
+          </div>
+          <div class="mod-grid">
+            <div>
+              <div class="kpi"><span class="v">16 of 16</span><span class="d">first miss after 4.2 fell between 12 and 15 Aug</span></div>
+              <ul class="facts">
+                <li>The handoff pattern: a sunk responder misses the first ping, and a neighbour takes the same callout <strong>about 61 seconds later</strong> (Mite → The Gale, Farlight → Cindermark, Vesper → Captain Vantage, The Undertow → Stormwrack).</li>
+                <li>Who gets asked first on home callouts flipped within <strong>about 48 hours</strong>.</li>
+              </ul>
+            </div>
+            <div>
+              <div class="label">My prompt · 03-rewind #17</div>
+              <div class="prompt">compare all responders whose behavior changed at roughly the same time. What common event or circumstance appears to connect them? Tell me in a couple sentences and convey this point with a line chart</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="mod lit reveal">
+        <div class="dot">4</div>
+        <div class="card">
+          <div class="mod-top">
+            <div class="meta"><span>Module 4 · X-Ray Vision</span><span>·</span><span>the routing code</span></div>
+            <h3>4.2 changed three numbers and no rules. The rule that did the damage has been there since 2019.</h3>
+          </div>
+          <div class="mod-grid">
+            <div>
+<pre class="code"><span class="c"># config.py — what 4.2 changed</span>
+OFFER_TIMEOUT_SECONDS    = <span class="h">60</span>   <span class="c"># was 90</span>
+WEIGHT_PROXIMITY         = <span class="h">0.60</span> <span class="c"># was 0.45</span>
+WEIGHT_RECENT_ACCEPTANCE = <span class="h">0.25</span> <span class="c"># was 0.40</span>
+
+<span class="c"># history.py — unchanged</span>
+def record_declined(responder):
+    <span class="c">"""They turned it down, or we ran out of
+    time waiting. ... Same either way"""</span>
+    score -= DECLINE_PENALTY   <span class="c"># 0.12</span>
+
+<span class="c"># TODO(2019): should this ease back toward
+# NEUTRAL_SCORE on its own after a while?</span></pre>
+              <p class="source">A take adds +0.08, any non-take costs −0.12, scores never fade and live only in memory. (Code simplified for display.)</p>
+            </div>
+            <div>
+              <div class="label">My prompt · 04-x-ray-vision #4</div>
+              <div class="prompt">keeping this information in mind, give me a visual breakdown of what was deployed from the code for 4.2 release that are related to the 2 issues above</div>
+              <p class="small muted" style="margin-top:12px">Follow-up I asked the same session (#12): if every hero became perfectly responsive tomorrow, how long to recover? Answer: about 6 takes in a row, 4–12 weeks, and only if they're asked at all.</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="mod lit reveal">
+        <div class="dot">5</div>
+        <div class="card">
+          <div class="mod-top">
+            <div class="meta"><span>Module 5 · Super Speed</span><span>·</span><span>brief + prototype</span></div>
+            <h3>"Back in Rotation": a one-pager and a clickable prototype for Helen, told from Kip's and Meteor Mite's side.</h3>
+          </div>
+          <div class="mod-grid">
+            <div>
+              <ul class="facts">
+                <li><strong>Brief</strong> (<a href="05-super-speed/brief.md">05-super-speed/brief.md</a>): four changes, two phases, asks for Helen, owners and dates.</li>
+                <li><strong>Prototype</strong> (<a href="05-super-speed/prototype.html">prototype.html</a>): Kip's console, Mite's phone, and a two-phone view of one callout passing between Mite and The Gale.</li>
+                <li>Modelled gap: <strong>about 120 pings</strong> never reached the four in the month after 4.2. This is an estimate.</li>
+              </ul>
+            </div>
+            <div>
+              <div class="label">My prompt · 05-super-speed #9</div>
+              <div class="prompt">in the prototypes, add a new tab to show the new behavior of ping declining and acceptance of jobs between the Gale &amp; Meteor Mite's phones</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="mod lit reveal">
+        <div class="dot">6</div>
+        <div class="card">
+          <div class="mod-top">
+            <div class="meta"><span>Module 6 · Sidekicks</span><span>·</span><span>review-checklist skill</span></div>
+            <h3>I built a skill that reviews briefs. Its first catch was my own: 1 of 4 core checks passed.</h3>
+          </div>
+          <div class="mod-grid">
+            <div>
+              <ul class="checks" aria-label="Core check results on my Module 5 brief">
+                <li><span class="b fail" aria-hidden="true">✕</span><span><b>Owner:</b> From line says only "Dispatch PM"</span></li>
+                <li><span class="b fail" aria-hidden="true">✕</span><span><b>Success measure:</b> untaken-callouts target also moves with the 60s wait</span></li>
+                <li><span class="b pass" aria-hidden="true">✓</span><span><b>Scope:</b> stays on the four, start to finish</span></li>
+                <li><span class="b fail" aria-hidden="true">✕</span><span><b>Problem first:</b> asks come before "What happened"</span></li>
+              </ul>
+              <p class="source">Plus 5 ready-to-share checks, added later. Full mapping in section 04 below.</p>
+            </div>
+            <div>
+              <div class="label">My prompt · 06-sidekicks #2</div>
+              <div class="prompt">rerun this skill on my module 5 brief and give me an overview</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- FIX -->
+<section id="fix">
+  <div class="wrap">
+    <p class="eyebrow">03 · The fix</p>
+    <h2>A miss is not a no. Low standing fades back. Silence becomes a question.</h2>
+    <p class="lede">Engineering could change one number this afternoon. Helen asked for something better: what a handler like Kip would notice, and what a quiet responder would feel. These are the four changes, each one something a person sees.</p>
+
+    <div class="changes">
+      <div class="card chg reveal"><span class="ph p1">Phase 1</span><h3>A miss is not a no</h3><p>When a ping runs out, Mite's phone says the callout went to someone else, and that a miss doesn't count like a turn-down.</p><div class="who">Responder notices</div></div>
+      <div class="card chg reveal"><span class="ph p1">Phase 1</span><h3>A bad stretch fades</h3><p>Low standing drifts back toward normal over time, so one bad week doesn't follow a responder forever. This answers Wen's 2019 question.</p><div class="who">Both notice</div></div>
+      <div class="card chg reveal"><span class="ph p2">Phase 2</span><h3>"Still on tonight?"</h3><p>After 3 misses in a row, the phone asks. Yes puts Mite back in line. No answer marks Mite away, and Kip can see it.</p><div class="who">Responder notices</div></div>
+      <div class="card chg reveal"><span class="ph p2">Phase 2</span><h3>Kip's card says why</h3><p>"Asked 2 times since Wed, usually about 6. Why: 4 missed in a row." Kip can finally answer Mite's "is something broken?"</p><div class="who">Handler notices · needs scores saved</div></div>
+    </div>
+
+    <div class="card chart-card reveal">
+      <div class="chart-head">
+        <div><h3>Try it: replay release week for Meteor Mite</h3><p class="small muted" style="margin:4px 0 0">Send callouts in Eastgate and choose what Mite does. Compare today's rules with the proposed ones.</p></div>
+        <div class="seg" role="group" aria-label="Rules"><button type="button" class="on" data-rules="old">4.2 rules (today)</button><button type="button" data-rules="new">Proposed rules</button></div>
+      </div>
+      <div class="replay">
+        <div>
+          <div class="lane" aria-live="polite">
+            <div class="racer"><div class="nm">Meteor Mite<small>4 min away</small></div><div class="track2"><div class="fill" id="fMite" style="background:var(--s2)"></div></div><div class="sc" id="sMite"></div></div>
+            <div class="racer"><div class="nm">The Gale<small>12 min away</small></div><div class="track2"><div class="fill" id="fGale" style="background:var(--s1)"></div></div><div class="sc" id="sGale"></div></div>
+          </div>
+          <p class="small muted" style="margin:4px 0 0">Bar = place-in-line score (closeness × 0.60 + standing × 0.25 + skills × 0.15). Higher is asked first.</p>
+          <div class="btns">
+            <button class="btn" type="button" data-act="take">Mite takes it</button>
+            <button class="btn" type="button" data-act="miss">Mite's phone misses it</button>
+            <button class="btn" type="button" data-act="decline">Mite turns it down</button>
+            <button class="btn ghost" type="button" id="rReset">Reset</button>
+          </div>
+          <div class="status" id="rStatus"></div>
+          <div class="phone-ask" id="rAsk">
+            <div class="small" style="opacity:.7">Mite's phone</div>
+            <div style="font-size:18px;font-weight:700;margin:4px 0 2px">Still on tonight?</div>
+            <div class="small" style="opacity:.75">3 missed in a row</div>
+            <div class="btns"><button class="btn primary" type="button" id="askOn" style="background:#fff;color:#111;border-color:#fff">Yes, I'm on</button><button class="btn" type="button" id="askOff" style="background:transparent;color:#fff;border-color:#555">Away for now</button></div>
+          </div>
+        </div>
+        <div>
+          <div class="label">What happened, callout by callout</div>
+          <div class="log" id="rLog"></div>
+        </div>
+      </div>
+      <p class="source">Uses the shipped 4.2 weights from config.py. Assumptions: travel times of 4 and 12 minutes, both start at standing 0.5, The Gale's standing held steady. Under today's rules Mite falls behind after exactly 4 misses, matching release week. The proposed fade rate (+0.03 per callout for low standing) is a placeholder until tuned with Ravi.</p>
+    </div>
+
+    <div class="card chart-card reveal">
+      <div class="chart-head">
+        <div><h3>The gap: about 120 pings never reached the four in the month after 4.2</h3><p class="small muted" style="margin:4px 0 0">Modelled line: once misses stop moving them down, the four keep their pre-4.2 share (28%) of real weekly pings.</p></div>
+        <div class="legend"><span><i style="background:var(--s2)"></i>Actual, to the four</span><span style="color:var(--s1)"><i class="dash" style="color:var(--s1)"></i><span style="color:var(--ink-2)">Modelled with the changes (estimate)</span></span></div>
+      </div>
+      <div class="chart" id="chartModel"></div>
+      <details class="tv"><summary>Show as table</summary><div id="tblModel"></div></details>
+      <p class="source">Estimate, not a replay of the routing code. Probably a little high, since some responders would answer the check-in with "away". Ravi should check it. Prompt behind this chart, 05-super-speed #3: <span class="mono">"how about adding a high-level graph that shows the current pings without the proposed fixes, and then the simulated pings…"</span></p>
+    </div>
+
+    <h3 style="margin-top:56px;font-size:24px">The prototype</h3>
+    <p class="muted" style="margin-top:8px">The live prototype is embedded below. Use the tabs at the top of it to switch views.</p>
+    <div class="proto reveal">
+      <div class="proto-bar"><span class="dots"><i></i><i></i><i></i></span><span class="mono">05-super-speed/prototype.html</span><a href="05-super-speed/prototype.html" target="_blank" rel="noopener">Open full screen ↗</a></div>
+      <iframe src="05-super-speed/prototype.html" title="Back in Rotation prototype" loading="lazy"></iframe>
+    </div>
+    <div class="tabsgrid">
+      <div class="card reveal"><h3>Console: Kip's view</h3><p>A "Needs you" list, each responder's place in line and why, tonight's ping dots, and actions Kip can take when Mite's phone is the problem.</p><div class="prompt"><span class="pn">05 #6</span>For Meteor Mite's &amp; Gale's console, the way Kip would see it, add some actions the handler would be able to take in the case that the hero was experiencing issues pressing buttons on the notification on their side for whichever reason</div></div>
+      <div class="card reveal"><h3>Phone: hard to miss</h3><p>An escalating full-screen alert with two big, clear choices, and the "Still on tonight?" check-in after a run of misses.</p><div class="prompt"><span class="pn">05 #8</span>show how the phone prototype would work with a more accurate notification function that brings more attention to it so heroes can't miss it, as well as UI that makes options clear, straightforward, and less text-heavy</div></div>
+      <div class="card reveal"><h3>Both phones: one callout</h3><p>One callout moving between Mite and The Gale, under 4.2 rules and the proposed rules, with who gets asked next.</p><div class="prompt"><span class="pn">05 #9</span>in the prototypes, add a new tab to show the new behavior of ping declining and acceptance of jobs between the Gale &amp; Meteor Mite's phones</div></div>
+    </div>
+    <p class="source">Open questions the prototype raises: a handler accepting on a responder's behalf is a policy and Security call; breaking through silent mode needs iOS critical-alert and Android full-screen permissions. Phone-trouble reports RD-1033–1040 in the prototype are made-up sample data.</p>
+  </div>
+</section>
+
+<!-- PREVENT -->
+<section id="prevent">
+  <div class="wrap">
+    <p class="eyebrow">04 · Keeping it from happening again</p>
+    <h2>4.2 would have failed all four of my skill's core checks.</h2>
+    <p class="lede">The bug was in the code, but the real failure was in the decision: a number changed with no written problem, no owner for the intent, and nothing to measure. <code>review-checklist</code> checks for exactly those gaps before a brief goes out.</p>
+
+    <div class="card chart-card reveal" style="overflow-x:auto">
+      <table class="maptable">
+        <thead><tr><th>Core check</th><th>What actually happened with 4.2</th><th>What the skill would have flagged</th></tr></thead>
+        <tbody>
+          <tr><td>Names who owns it</td><td>On 13 Aug Marcus asked whether the routing change was <em>meant</em> to hit people who turn jobs down. Nobody has answered. Every roadmap item is still owned by Priya, who left on 21 Aug.</td><td><span class="pill">Missing</span> No named owner for the intent; the owner has left.</td></tr>
+          <tr><td>Says how we'll know it worked</td><td>"Ping timeout tuning" shipped as one blanket cut, from 90s to 60s. The only number anyone watched was acceptance, which went <em>up</em> and hid the four.</td><td><span class="pill">Missing</span> No measure, no guardrail for who gets asked.</td></tr>
+          <tr><td>Keeps the same scope</td><td>Availability Confidence was committed to 4.2 and silently dropped. "Tuning" shrank to a single global number.</td><td><span class="pill">Partly</span> A promised piece was dropped without saying so.</td></tr>
+          <tr><td>Explains the problem before the fix</td><td>Three numbers changed in config.py with no written problem. Wen's 2019 question, "should this ease back?", was never answered.</td><td><span class="pill">Missing</span> Goes straight to the change.</td></tr>
+        </tbody>
+      </table>
+      <p class="source">Plus five ready-to-share checks: numbers agree, safe to share (Security Policy 4.1 always first), makes sense to an outsider, clear ask up front, estimates labelled.</p>
+    </div>
+
+    <div class="two">
+      <div class="card reveal">
+        <div class="label">It caught me first · my Module 5 brief</div>
+        <div class="score-ring">
+          <svg width="96" height="96" viewBox="0 0 96 96" role="img" aria-label="1 of 4 core checks passed">
+            <circle cx="48" cy="48" r="38" fill="none" stroke="var(--grid)" stroke-width="10"/>
+            <circle cx="48" cy="48" r="38" fill="none" stroke="var(--s1)" stroke-width="10" stroke-linecap="round" stroke-dasharray="59.7 238.8" transform="rotate(-90 48 48)"/>
+            <text x="48" y="54" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)">1/4</text>
+          </svg>
+          <div style="flex:1;min-width:200px"><b>Core checks passed</b><p class="small muted" style="margin:4px 0 0">Four fixes are still open on the brief. Ticking them off is the next edit.</p></div>
+        </div>
+        <ul class="todo" style="margin-top:12px">
+          <li><input type="checkbox" aria-label="Put my name on the From line"><span><b>Put my name on the From line.</b> It says only "Dispatch PM".</span></li>
+          <li><input type="checkbox" aria-label="Move What happened above the asks"><span><b>Move "What happened" above the asks.</b> Problem before fix.</span></li>
+          <li><input type="checkbox" aria-label="Explain the quick fix"><span><b>Explain "the quick fix".</b> An outsider won't know what it means.</span></li>
+          <li><input type="checkbox" aria-label="Note the 60s dependency"><span><b>Note that the untaken-callouts target</b> also moves with the 60s wait, which is out of scope.</span></li>
+        </ul>
+      </div>
+      <div class="card reveal">
+        <div class="label">How the skill was built · my prompts</div>
+        <div class="prompt" style="margin-bottom:10px"><span class="pn">06 #1</span>Make a skill called review-checklist. When I point it at a brief, it checks that the brief: names who owns it, says how we'll know it worked, keeps the same scope start to finish, and explains the problem before the fix.</div>
+        <div class="prompt" style="margin-bottom:10px"><span class="pn">06 #8</span>let's improve this skill. add in a step so that it proposes a fix for each check it didn't pass. What other improvements you can think of that will help a PM review other PM's briefs so that they're fit for a wider stakeholder audience?</div>
+        <div class="prompt"><span class="pn">06 #10</span>update this skill so that it's provided in a more digestible way, like a checklist format, that users can go through easyily and check off what they've already done</div>
+        <p class="small muted" style="margin-top:12px">Run it with <code>review-checklist 05-super-speed/brief.md</code>. It never edits the brief. It returns a tick-off checklist with paste-in wording, and re-checks after edits.</p>
+      </div>
+    </div>
+
+    <div class="callout reveal"><div class="ic">→</div><p><b>Making it a habit:</b> I asked for a weekly Monday run (06 #11). It isn't scheduled yet. The lasting scheduler saves outside this course folder, which the course rules don't allow, so it needs either an exception or a reminder that lasts only for the session. Until then, I run the skill on every brief before it goes to Helen.</p></div>
+  </div>
+</section>
+
+<!-- NEXT -->
+<section id="next">
+  <div class="wrap">
+    <p class="eyebrow">05 · What's next</p>
+    <h2>What I need, from whom, and by when.</h2>
+    <div class="two">
+      <div class="card reveal">
+        <div class="label">Asks for Helen</div>
+        <ul class="facts">
+          <li><strong>Hold the quick one-number fix.</strong> We don't yet know which scoring numbers are live, so changing one could miss.</li>
+          <li><strong>Make the policy call:</strong> a miss is not a "no", and low standing fades unless the responder says they're away.</li>
+          <li><strong>Find a release slot.</strong> Phase 1 is small. Phase 2 overlaps Availability Confidence, which is overdue.</li>
+        </ul>
+        <p class="small muted">Meanwhile, at no cost: I'll contact the four handlers directly. None of them have filed tickets.</p>
+      </div>
+      <div class="card reveal" style="overflow-x:auto">
+        <div class="label">Open questions before build</div>
+        <table class="next">
+          <thead><tr><th>Owner</th><th>Question</th><th>By</th></tr></thead>
+          <tbody>
+            <tr><td>Wen</td><td>Which scoring numbers are actually running? A score rebuilt from the code doesn't fully match who sank.</td><td class="when">Fri 13 Nov</td></tr>
+            <tr><td>Wen</td><td>Why do most unanswered callouts stop after one ping?</td><td class="when">Fri 13 Nov</td></tr>
+            <tr><td>Ravi</td><td>Are the four still this quiet? Our data stops on 6 Sep.</td><td class="when">Fri 13 Nov</td></tr>
+            <tr><td>Marcus</td><td>Rough size of Phase 1 and Phase 2.</td><td class="when">Wed 18 Nov</td></tr>
+            <tr><td>Me</td><td>Recommendation and size estimate to Helen.</td><td class="when">Fri 20 Nov</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout reveal" style="background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 35%,transparent)"><div class="ic" style="background:var(--warn)">?</div><p><b>How sure we are:</b> the pattern is strong. All four sank right after their release-week misses, and neither a seasonal dip nor past turn-downs explains who sank. The exact mechanism stays unconfirmed until Wen answers. Data runs 29 Jun – 6 Sep; the modelled line and the billing risk (we bill per active responder) are estimates, not measurements.</p></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Rook Industries is a fictional company. This is coursework for Product School's "Claude Code for PMs" (cohort ccpm-2026.1). Data: rook-database <code>pings</code> and <code>support_tickets</code>; code: <code>00-rook/code/dispatch-routing</code>; prompts: <code>01–06/prompts.md</code>.</div>
+</footer>
+
+<script>
+(function(){
+  // ---------- theme toggle ----------
+  var root=document.documentElement, btn=document.getElementById('themeBtn');
+  try{var saved=localStorage.getItem('rook-theme'); if(saved) root.setAttribute('data-theme',saved);}catch(e){}
+  btn.addEventListener('click',function(){
+    var cur=root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    var nx=cur==='dark'?'light':'dark'; root.setAttribute('data-theme',nx);
+    try{localStorage.setItem('rook-theme',nx);}catch(e){}
+    drawAll();
+  });
+
+  // ---------- data (rook-database pings, weeks from Monday) ----------
+  var W=['29 Jun','6 Jul','13 Jul','20 Jul','27 Jul','3 Aug','10 Aug','17 Aug','24 Aug','31 Aug'];
+  var four ={p:[49,48,48,50,50,49,43,16,6,3], m:[0,1,3,2,2,1,17,9,4,3], t:[36,37,36,37,40,37,18,3,0,0]};
+  var rest ={p:[123,122,126,126,120,123,134,142,156,162], m:[3,3,3,3,2,1,21,19,20,18], t:[96,94,97,95,92,97,78,101,108,120]};
+  var mite ={p:[11,12,10,11,12,11,10,4,2,1], m:[0,0,0,1,1,0,4,2,1,1], t:[7,9,6,7,9,8,4,1,0,0]};
+  var gale ={p:[13,12,13,14,13,13,15,17,20,21], m:[1,0,0,1,1,0,3,2,2,2], t:[10,9,10,11,11,10,9,12,14,16]};
+  var modeled=[null,null,null,null,null,null,50,45,46,47];
+
+  function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+  var NS='http://www.w3.org/2000/svg';
+  function el(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+
+  function lineChart(host,cfg){
+    host.innerHTML='';
+    var w=Math.max(320,host.clientWidth), small=w<560, h=small?260:300;
+    var m={t:16,r:small?18:110,b:34,l:40};
+    var iw=w-m.l-m.r, ih=h-m.t-m.b;
+    var svg=el('svg',{viewBox:'0 0 '+w+' '+h,role:'img','aria-label':cfg.aria},host);
+    var ymax=cfg.ymax, n=cfg.labels.length;
+    function x(i){return m.l+iw*i/(n-1);} function y(v){return m.t+ih*(1-v/ymax);}
+    var grid=css('--grid'), muted=css('--muted'), ink2=css('--ink-2'), surf=css('--surface');
+    cfg.ticks.forEach(function(t){
+      el('line',{x1:m.l,x2:m.l+iw,y1:y(t),y2:y(t),stroke:grid,'stroke-width':1},svg);
+      var tx=el('text',{x:m.l-8,y:y(t)+4,'text-anchor':'end','font-size':11,fill:muted},svg);tx.textContent=t;
+    });
+    cfg.labels.forEach(function(l,i){
+      if(small && i%2) return;
+      var tx=el('text',{x:x(i),y:h-10,'text-anchor':'middle','font-size':11,fill:muted},svg);tx.textContent=l;
+    });
+    if(cfg.marker!=null){
+      var mx=x(cfg.marker)+iw/(n-1)*0.29; // 12 Aug sits 2 days into week of 10 Aug
+      el('line',{x1:mx,x2:mx,y1:m.t,y2:m.t+ih,stroke:ink2,'stroke-width':1,'stroke-dasharray':'3 3'},svg);
+      var mt=el('text',{x:mx+6,y:m.t+10,'font-size':11,'font-weight':600,fill:ink2},svg);mt.textContent='4.2 ships · 12 Aug';
+    }
+    cfg.series.forEach(function(s){
+      var col=css(s.color), d='', started=false;
+      s.values.forEach(function(v,i){ if(v==null){return;} d+=(started?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1); started=true;});
+      var p=el('path',{d:d,fill:'none',stroke:col,'stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'},svg);
+      if(s.dash) p.setAttribute('stroke-dasharray','6 5');
+      s.values.forEach(function(v,i){ if(v==null) return; el('circle',{cx:x(i),cy:y(v),r:s.dash?3:3.5,fill:s.dash?surf:col,stroke:s.dash?col:surf,'stroke-width':2},svg);});
+      if(!small){ var li=s.values.length-1; var lt=el('text',{x:x(li)+10,y:y(s.values[li])+4+(s.labelDy||0),'font-size':12,'font-weight':600,fill:css('--ink')},svg); lt.textContent=s.endLabel||s.values[li];}
+    });
+    // hover
+    var tip=document.createElement('div');tip.className='tip';host.appendChild(tip);
+    var cross=el('line',{y1:m.t,y2:m.t+ih,stroke:muted,'stroke-width':1,opacity:0},svg);
+    var hit=el('rect',{x:m.l-10,y:m.t,width:iw+20,height:ih,fill:'transparent'},svg);
+    function show(evt){
+      var r=svg.getBoundingClientRect(), sx=(evt.clientX-r.left)*(w/r.width);
+      var i=Math.max(0,Math.min(n-1,Math.round((sx-m.l)/(iw/(n-1)))));
+      cross.setAttribute('x1',x(i));cross.setAttribute('x2',x(i));cross.setAttribute('opacity',.6);
+      var html='<b>Week of '+cfg.labels[i]+'</b>'+cfg.series.map(function(s){
+        var v=s.values[i]; if(v==null) return '';
+        return '<div class="row"><span><i class="sw" style="background:'+css(s.color)+'"></i>'+s.name+'</span><span>'+v+(s.detail?s.detail(i):'')+'</span></div>';
+      }).join('');
+      tip.innerHTML=html; tip.style.opacity=1;
+      var px=x(i)*(r.width/w), tw=tip.offsetWidth;
+      tip.style.left=Math.min(r.width-tw-4,Math.max(4,px+12-(px>r.width*0.6?tw+24:0)))+'px';
+      tip.style.top='8px';
+    }
+    hit.addEventListener('mousemove',show); hit.addEventListener('touchstart',function(e){show(e.touches[0]);},{passive:true});
+    hit.addEventListener('mouseleave',function(){tip.style.opacity=0;cross.setAttribute('opacity',0);});
+  }
+
+  function table(host,cols,rows){
+    host.innerHTML='<table><thead><tr>'+cols.map(function(c,i){return '<th'+(i?' class="n"':'')+'>'+c+'</th>';}).join('')+'</tr></thead><tbody>'+
+      rows.map(function(r){return '<tr>'+r.map(function(c,i){return '<td'+(i?' class="n"':'')+'>'+(c==null?'–':c)+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table>';
+  }
+  function det(o){return function(i){return ' <span style="color:var(--muted)">('+o.m[i]+' missed · '+o.t[i]+' taken)</span>';};}
+
+  function drawAll(){
+    lineChart(document.getElementById('chartGroups'),{aria:'Weekly pings: the four fell from 49 to 3 while the other 12 rose from 123 to 162',labels:W,ymax:180,ticks:[0,60,120,180],marker:6,
+      series:[{name:'The other 12',color:'--s1',values:rest.p,detail:det(rest),endLabel:'162 · other 12'},{name:'The four',color:'--s2',values:four.p,detail:det(four),endLabel:'3 · the four'}]});
+    lineChart(document.getElementById('chartPair'),{aria:'Meteor Mite fell from 11 to 1 ping a week while The Gale rose from 13 to 21',labels:W,ymax:24,ticks:[0,8,16,24],marker:6,
+      series:[{name:'The Gale',color:'--s1',values:gale.p,detail:det(gale),endLabel:'21 · The Gale'},{name:'Meteor Mite',color:'--s2',values:mite.p,detail:det(mite),endLabel:'1 · Meteor Mite'}]});
+    lineChart(document.getElementById('chartModel'),{aria:'Actual pings to the four fell to 3 a week; modelled with the changes they stay near 45 to 50',labels:W,ymax:60,ticks:[0,20,40,60],marker:6,
+      series:[{name:'Modelled (estimate)',color:'--s1',values:modeled,dash:true,endLabel:'47 · modelled'},{name:'Actual',color:'--s2',values:four.p,endLabel:'3 · actual'}]});
+  }
+  table(document.getElementById('tblGroups'),['Week of','The four: pings','missed','taken','Other 12: pings','missed','taken'],W.map(function(l,i){return [l,four.p[i],four.m[i],four.t[i],rest.p[i],rest.m[i],rest.t[i]];}));
+  table(document.getElementById('tblPair'),['Week of','Mite: pings','missed','taken','The Gale: pings','missed','taken'],W.map(function(l,i){return [l,mite.p[i],mite.m[i],mite.t[i],gale.p[i],gale.m[i],gale.t[i]];}));
+  table(document.getElementById('tblModel'),['Week of','All pings','Actual to the four','Modelled to the four'],W.map(function(l,i){return [l,four.p[i]+rest.p[i],four.p[i],modeled[i]];}));
+
+  // week strip (module 2)
+  var ws=document.getElementById('weekstrip');
+  [5,6,7,8,9].forEach(function(i){
+    var pct=Math.round(100*four.m[i]/four.p[i]);
+    ws.insertAdjacentHTML('beforeend','<div class="wk"><div class="w">'+W[i]+'</div><div class="p">'+four.p[i]+'</div><div class="bar" title="'+pct+'% missed"><span style="width:'+pct+'%"></span></div><div class="m">'+pct+'% missed</div><div class="m">'+four.t[i]+' taken</div></div>');
+  });
+
+  var rt; window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(drawAll,120);});
+  drawAll();
+
+  // ---------- release week replay ----------
+  var W_P=0.60,W_A=0.25,W_C=0.15, CREDIT=0.08, PEN=0.12;
+  var prox={mite:1-4/45, gale:1-12/45};
+  var S;
+  function reset(){S={rules:S?S.rules:'old',a:{mite:0.5,gale:0.5},run:0,n:0,unasked:0,away:false,asking:false};
+    document.getElementById('rLog').innerHTML='';document.getElementById('rAsk').classList.remove('show');paint('Send a callout. Mite is closer, so Mite is asked first.','');}
+  function place(k){return W_P*prox[k]+W_A*S.a[k]+W_C*1;}
+  function clamp(v){return Math.max(0,Math.min(1,v));}
+  function miteFirst(){return !S.away && place('mite')>=place('gale');}
+  function paint(msg,cls){
+    var pm=place('mite'),pg=place('gale');
+    document.getElementById('fMite').style.width=(pm*100).toFixed(1)+'%';
+    document.getElementById('fGale').style.width=(pg*100).toFixed(1)+'%';
+    var first=miteFirst();
+    document.getElementById('sMite').innerHTML=S.away?'away':pm.toFixed(2);
+    document.getElementById('sGale').textContent=pg.toFixed(2);
+    var nm=document.querySelectorAll('.racer .nm');
+    nm[0].innerHTML='Meteor Mite'+(first?'<span class="first">1st</span>':'')+'<small>4 min away · standing '+S.a.mite.toFixed(2)+'</small>';
+    nm[1].innerHTML='The Gale'+(!first?'<span class="first">1st</span>':'')+'<small>12 min away · standing '+S.a.gale.toFixed(2)+'</small>';
+    var st=document.getElementById('rStatus'); st.className='status '+(cls||''); st.innerHTML=msg;
+  }
+  function log(t){S.n++;document.getElementById('rLog').insertAdjacentHTML('afterbegin','<div><b>Callout '+S.n+':</b> '+t+'</div>');}
+  function fade(){ if(S.rules==='new' && S.a.mite<0.5) S.a.mite=Math.min(0.5,S.a.mite+0.03); }
+  function act(a){
+    if(S.asking) return;
+    if(!miteFirst()){
+      S.unasked++; log(S.away?'Mite is marked away, so The Gale is asked and takes it.':'The Gale is asked first and takes it. <b>Mite is never pinged.</b>');
+      fade();
+      if(S.rules==='old') paint('Mite has missed '+S.unasked+' callout'+(S.unasked>1?'s':'')+' without being asked. Under today\'s rules nothing Mite does can help: standing only goes up on a take, and Mite never gets offered one.','bad');
+      else paint(S.away?'Mite is away. Kip can see it on the console. Mite comes back the moment they say "I\'m on".':'Standing is fading back toward normal on its own. Mite will be first again soon.','');
+      return;
+    }
+    if(a==='take'){S.a.mite=clamp(S.a.mite+CREDIT);S.run=0;log('Mite is asked first and <b>takes it</b>. Standing +0.08.');}
+    else if(a==='decline'){S.a.mite=clamp(S.a.mite-PEN);S.run=0;log('Mite is asked first and <b>turns it down</b>. Standing −0.12. The Gale takes it.');}
+    else { S.run++;
+      if(S.rules==='old'){S.a.mite=clamp(S.a.mite-PEN);log('Mite\'s ping runs out after 60s. <b>Counted as a no: −0.12.</b> The Gale takes it about 61s later.');}
+      else {log('Mite\'s ping runs out. Phone says it went to someone else. <b>No penalty.</b> The Gale takes it.');}
+    }
+    fade();
+    if(S.rules==='new' && a==='miss' && S.run>=3){S.asking=true;document.getElementById('rAsk').classList.add('show');paint('3 misses in a row, so Mite\'s phone asks instead of going quiet.','');return;}
+    if(!miteFirst() && S.rules==='old') paint('<b>Mite just dropped behind The Gale.</b> From here on Mite won\'t be asked, so Mite can\'t earn standing back.','bad');
+    else paint(miteFirst()?'Mite is still first in line for Eastgate.':'The Gale is first for now.',miteFirst()?'ok':'');
+  }
+  document.querySelectorAll('[data-act]').forEach(function(b){b.addEventListener('click',function(){act(b.getAttribute('data-act'));});});
+  document.getElementById('rReset').addEventListener('click',reset);
+  document.getElementById('askOn').addEventListener('click',function(){S.asking=false;S.run=0;S.away=false;S.a.mite=Math.max(S.a.mite,0.5);document.getElementById('rAsk').classList.remove('show');log('Mite answers <b>"Yes, I\'m on"</b>. Back in line straight away.');paint('Mite said yes, so Mite is first again for Eastgate. The answer restored standing, not a timer or a ticket.','ok');});
+  document.getElementById('askOff').addEventListener('click',function(){S.asking=false;S.run=0;S.away=true;document.getElementById('rAsk').classList.remove('show');log('Mite taps <b>"Away for now"</b>. Kip sees Mite as away.');paint('Mite is away. The Gale covers Eastgate, and nobody wonders why Mite went quiet.','');});
+  document.querySelectorAll('[data-rules]').forEach(function(b){b.addEventListener('click',function(){
+    document.querySelectorAll('[data-rules]').forEach(function(x){x.classList.toggle('on',x===b);});
+    S.rules=b.getAttribute('data-rules'); reset();
+  });});
+  reset();
+
+  // ---------- reveal + nav highlight ----------
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(function(e){io.observe(e);});
+    var links={}; document.querySelectorAll('nav.top a').forEach(function(a){links[a.getAttribute('href').slice(1)]=a;});
+    var so=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){for(var k in links)links[k].classList.toggle('on',k===e.target.id);}});},{rootMargin:'-45% 0px -50% 0px'});
+    document.querySelectorAll('section[id]').forEach(function(s){so.observe(s);});
+  } else document.querySelectorAll('.reveal').forEach(function(e){e.classList.add('in');});
+})();
+</script>
+</body>
+</html>
