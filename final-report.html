@@ -191,6 +191,31 @@ details.data th:first-child,details.data td:first-child{text-align:left}
 .bubble .who-said{display:flex;align-items:center;gap:8px;font:600 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:7px}
 .bubble .who-said i{width:7px;height:7px;border-radius:50%;background:var(--gold)}
 .bubble q{display:block;font:500 13.5px/1.6 var(--f-mono);color:var(--ink);quotes:none}
+.chain{margin-top:16px}
+.chain .bubble{margin-top:0}
+.chain .bubble.first{border-style:dashed;background:rgba(6,5,26,.35)}
+.chain .bubble.first .who-said{color:var(--ink-2)}
+.chain .bubble.first .who-said i{background:var(--ink-2)}
+.chain .bubble.first q{color:var(--ink-2)}
+.sharpen{display:flex;align-items:center;gap:8px;padding:7px 0 7px 16px;font:600 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.sharpen svg{width:16px;height:16px}
+.tests{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.tests li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-size:13.5px;color:var(--ink-2);line-height:1.45}
+.tests li b{display:block;color:var(--ink);font-size:14px;margin-bottom:1px}
+.tests .mk{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font:800 14px var(--f-body)}
+.tests .no .mk{background:rgba(255,92,138,.18);color:var(--pink)}
+.tests .yes{border-color:rgba(62,230,160,.45);background:rgba(62,230,160,.08)}
+.tests .yes .mk{background:rgba(62,230,160,.2);color:var(--good)}
+.grow{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.grow .big{font:400 44px/1 var(--f-display);background:var(--g-hero);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
+.grow .t{font-size:13.5px;color:var(--ink-2)}
+.pill-label{font:600 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px}
+.pill-label:first-of-type{margin-top:0}
+.viz .pills{margin-top:0}
+.pills span.added{background:rgba(255,210,63,.14);color:#ffe28a}
+.mini-results{display:grid;gap:8px;margin-top:14px}
+.mini-results div{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-size:13.5px;color:var(--ink-2)}
+.mini-results b{font:400 20px var(--f-display);color:var(--ink);white-space:nowrap}
 .viz{background:var(--well);border:1px solid var(--line);border-radius:16px;padding:16px}
 .viz-t{font:600 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
 
@@ -525,7 +550,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;font-size:12.5px;col
   <div class="wrap">
     <div class="chapter reveal"><i></i>Chapter 2 · The evidence</div>
     <h2 class="reveal">Six modules. Six findings. <em>Six questions I asked.</em></h2>
-    <p class="lede reveal">Each issue below is one finding from one module, with the exact prompt I wrote that produced it.</p>
+    <p class="lede reveal">Each issue below is one finding from one module, with the exact prompt I wrote that produced it. Where a question got sharper as I went, you'll see the prompt I asked first, then the one that sharpened it.</p>
     <div class="prompt-note reveal">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg>
       <span>Prompts are copied exactly as I typed them in each module's <code>prompts.md</code>, typos included. The course's template prompts, and anything close to them, are left out.</span>
@@ -544,9 +569,13 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;font-size:12.5px;col
         <div class="issue-main">
           <div>
             <h3>One cause explains the biggest share of the noise.</h3>
+            <p>Before picking a cause, I sorted out which sources to trust: the database and code first, tickets and interviews next, and the handoff notes and old briefs last. Then I looked for the cause behind the most complaints.</p>
             <p>The 60-second wait plus "a miss counts as a no" explains about 35 of the 107 tickets since 4.2, and all four handler interviews. It also solves the part Support couldn't: the two-thirds of tickets saying "phone never goes off". Farlight, The Undertow, Meteor Mite and Vesper each fell from about 12 pings a week to 3 or 4, while their home callouts went to neighbours.</p>
-            <p class="src">Sources: support tickets, interviews on rook-wiki, <code>pings</code> table.</p>
-            <div class="bubble"><div class="who-said"><i></i>My prompt · Module 1 · #4</div><q>Act as a senior incident investigator, analyze all available context and determine what underlying problem explains the largest percentage of reported symptoms.</q></div>
+            <div class="chain">
+              <div class="bubble first"><div class="who-said"><i></i>Asked first · Module 1 · #2</div><q>based on this, what are the most reliable sources of the root issue given in simplified, brief bullet points</q></div>
+              <div class="sharpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 4v16M6 14l6 6 6-6"/></svg>Then sharpened it</div>
+              <div class="bubble"><div class="who-said"><i></i>My prompt · Module 1 · #4</div><q>Act as a senior incident investigator, analyze all available context and determine what underlying problem explains the largest percentage of reported symptoms.</q></div>
+            </div>
           </div>
           <div class="viz">
             <div class="viz-t">107 tickets since 4.2</div>
@@ -574,9 +603,8 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;font-size:12.5px;col
         <div class="issue-main">
           <div>
             <h3>The misses came first. The silence came after.</h3>
-            <p>In the week 4.2 shipped, half of the four's pings ran out: 18 of 36, up from 1 of 51 the week before. Then their pings collapsed, from 36 to 12 to 6 to 2, and takes fell to zero. That order fits the scoring penalty. A seasonal dip would have cut pings first.</p>
-            <p class="src">Source: <code>pings</code> table, weeks counted from release day (Wed 12 Aug).</p>
-            <div class="bubble"><div class="who-said"><i></i>My prompt · Module 2 · #6</div><q>run the week-by-week test in the pings data: misses vs pings received for the responders who went quiet and the ones who gained.</q></div>
+            <p>Before trusting my first theory, I checked it against the weekly numbers. In the week 4.2 shipped, half of the four's pings ran out: 18 of 36, up from 1 of 51 the week before. Then their pings collapsed, from 36 to 12 to 6 to 2, and takes fell to zero. That order fits the scoring penalty. A seasonal dip would have cut pings first.</p>
+            <div class="bubble"><div class="who-said"><i></i>My prompt · Module 2 · #7</div><q>based off this new info, how likely is it that this is an issue that stemmed from what you were originally thinking and why?</q></div>
           </div>
           <div class="viz">
             <div class="viz-t">The four: pings a week, by outcome</div>
@@ -597,9 +625,13 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;font-size:12.5px;col
         <div class="issue-main">
           <div>
             <h3>All 16 responders felt it in the same four days.</h3>
+            <p>Was this four people's behaviour, or the release? I weighed the evidence both ways, then looked for what connected everyone whose pattern changed.</p>
             <p>Every responder's first miss after 4.2 landed between 12 and 15 Aug. The common event isn't a season or a person. It's the release. The four just got hit hardest: 40% to 57% of their release-week pings ran out, against 6% to 20% for everyone else.</p>
-            <p class="src">Source: <code>pings</code> table, first missed ping on or after 12 Aug for each responder.</p>
-            <div class="bubble"><div class="who-said"><i></i>My prompt · Module 3 · #17</div><q>compare all responders whose behavior changed at roughly the same time. What common event or circumstance appears to connect them? Tell me in a couple sentences and convey this point with a line chart</q></div>
+            <div class="chain">
+              <div class="bubble first"><div class="who-said"><i></i>Asked first · Module 3 · #15</div><q>if this is a  pattern that reflects a broader 4.2 change rather than individual behavior, what evidence supports that interpretation, and what evidence argues against it?</q></div>
+              <div class="sharpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 4v16M6 14l6 6 6-6"/></svg>Then sharpened it</div>
+              <div class="bubble"><div class="who-said"><i></i>My prompt · Module 3 · #17</div><q>compare all responders whose behavior changed at roughly the same time. What common event or circumstance appears to connect them? Tell me in a couple sentences and convey this point with a line chart</q></div>
+            </div>
           </div>
           <div class="viz">
             <div class="viz-t">First miss after 4.2, all 16 responders</div>
@@ -619,15 +651,25 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;font-size:12.5px;col
         </div>
         <div class="issue-main">
           <div>
-            <h3>4.2 changed three numbers. It switched on a rule that was already there.</h3>
-            <p>No new rules shipped. But the shorter wait turned more pings into misses, and the code has always scored a miss exactly like a turn-down. Only a take adds points. There's no fade and no reset, and scores live only in memory, so nobody can look them up.</p>
-            <p class="src">Source: <code>00-rook/code/dispatch-routing/</code> config.py, history.py, offer.py.</p>
-            <div class="bubble"><div class="who-said"><i></i>My prompt · Module 4 · #4</div><q>keeping this information in mind, give me a visual breakdown of what was deployed from the code for 4.2 release that are related to the 2 issues above</q></div>
+            <h3>I tried to prove myself wrong. Only one explanation survived.</h3>
+            <p>I asked whether the data really pointed to one cause, or whether other stories fit just as well, and then had each theory tested against the data. Three rivals failed.</p>
+            <p>What's left: the shorter wait caused misses, and the code scores a miss exactly like a "no". 4.2 changed only three numbers. That rule was already there, with no fade and no reset.</p>
+            <div class="chain">
+              <div class="bubble first"><div class="who-said"><i></i>Asked first · Module 4 · #7</div><q>does the data uniquely support the theory that missing pings in release week decided who sank and that a miss is scored as a no, or whether several different explanations fit equally well.</q></div>
+              <div class="sharpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 4v16M6 14l6 6 6-6"/></svg>Then sharpened it</div>
+              <div class="bubble"><div class="who-said"><i></i>My prompt · Module 4 · #8</div><q>out of the likely responder patterns you see in the data, test each prediction one by one and tell me which predictions pass and which fail, using highly simple charts</q></div>
+            </div>
           </div>
           <div>
-<pre class="code"><span class="f">config.py · what 4.2 changed</span><span class="k">OFFER_TIMEOUT_SECONDS</span> = <span class="hl">60</span>      <span class="c"># was 90 until 4.2</span>
-<span class="k">WEIGHT_PROXIMITY</span> = <span class="hl2">0.60</span>           <span class="c"># was 0.45 until 4.2</span>
-<span class="k">WEIGHT_RECENT_ACCEPTANCE</span> = <span class="hl2">0.25</span>   <span class="c"># was 0.40 until 4.2</span></pre>
+            <div class="viz" style="margin-bottom:10px">
+              <div class="viz-t">Each theory, tested against the data</div>
+              <ul class="tests">
+                <li class="no"><span class="mk">✕</span><span><b>"The August dip"</b>The four's misses rose before their pings fell. A seasonal dip would cut pings first.</span></li>
+                <li class="no"><span class="mk">✕</span><span><b>"They always turned work down"</b>Old turn-downs didn't predict who sank. Vesper turned down 15% and sank; Halfmoon turned down 28% and didn't.</span></li>
+                <li class="no"><span class="mk">✕</span><span><b>"4.2 demoted them on day one"</b>Locals stayed first in line until 15 Aug, after the misses.</span></li>
+                <li class="yes"><span class="mk">✓</span><span><b>Release-week misses, scored as a "no"</b>The responders who missed the most in release week are the ones who sank.</span></li>
+              </ul>
+            </div>
 <pre class="code"><span class="f">history.py · what 4.2 didn't touch</span><span class="c"># TODO(2019): should this ease back toward
 # NEUTRAL_SCORE on its own after a while?
 # ... Leaving it as-is for now.</span>
@@ -654,7 +696,6 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;font-size:12.5px;col
           <div>
             <h3>About 120 pings never reached the four in the month after 4.2.</h3>
             <p>If misses had stopped moving the four down the line, they'd have kept their pre-4.2 share of all pings (28%): about 45 to 50 a week. Instead they got 43, then 16, 6 and 3. The weekly totals are real, so the citywide drop in callouts is already included.</p>
-            <p class="src">Estimate, not a replay of the routing code, and probably a little high. Ravi should check it. Source: <code>pings</code> table.</p>
             <div class="bubble"><div class="who-said"><i></i>My prompt · Module 5 · #3</div><q>how about adding a high-level graph that shows the current pings without the proposed fixes, and then the simulated pings that would come after the 4 proposed changes. Would a director find that helpful? and yes, please add thatr</q></div>
           </div>
           <div class="viz">
@@ -675,22 +716,21 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;font-size:12.5px;col
         </div>
         <div class="issue-main">
           <div>
-            <h3>My own brief passed only 1 of 4 core checks.</h3>
-            <p>I pointed review-checklist at my Module 5 brief, and it found what I couldn't see in my own work. The fixes are small, and they're exactly the gaps that let 4.2 slip through: no named owner, and a fix that shows up before the problem.</p>
-            <p class="src">All four fixes are now in <code>05-super-speed/brief.md</code> (7 Nov), and a re-check passes all 9 checks.</p>
-            <div class="bubble"><div class="who-said"><i></i>My prompt · Module 6 · #2</div><q>rerun this skill on my module 5 brief and give me an overview</q></div>
+            <h3>My brief failed my own skill, so I made the skill stronger.</h3>
+            <p>The first version only had four checks. When it scored my Module 5 brief 1 of 4, I asked what else would help a PM get any brief ready for a wider audience.</p>
+            <p>Now, for every check that fails, it proposes a fix with wording you can paste in, and it adds five ready-to-share checks, including Security Policy 4.1. Across peer briefs, its reviews flagged a possible Security Policy 4.1 problem: real-looking names next to responder aliases.</p>
+            <div class="bubble"><div class="who-said"><i></i>My prompt · Module 6 · #8</div><q>let's improve this skill. add in a step so that it proposes a fix for each check it didn't pass. What other improvements you can think of that will help a PM review other PM's briefs so that they're fit for a wider stakeholder audience?</q></div>
           </div>
           <div class="viz">
-            <div class="score-pill">
-              <svg class="ring" viewBox="0 0 66 66" aria-hidden="true"><circle cx="33" cy="33" r="27" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="8"/><circle cx="33" cy="33" r="27" fill="none" stroke="url(#bu)" stroke-width="8" stroke-linecap="round" stroke-dasharray="42.4 169.6" transform="rotate(-90 33 33)"/></svg>
-              <div class="t"><b>1 of 4</b>core checks passed</div>
+            <div class="grow"><span class="big">4 → 9</span><span class="t">checks, with a paste-in fix for each one a brief fails</span></div>
+            <div class="pill-label">Started with</div>
+            <div class="pills"><span class="core">Names who owns it</span><span class="core">How we'll know it worked</span><span class="core">Same scope throughout</span><span class="core">Problem before fix</span></div>
+            <div class="pill-label">Added after this prompt</div>
+            <div class="pills"><span class="added">Numbers agree</span><span class="added">Safe to share (Policy 4.1)</span><span class="added">Outsider can follow</span><span class="added">Ask up front</span><span class="added">Estimates labelled</span></div>
+            <div class="mini-results">
+              <div><span>My own brief, first run</span><b>1 of 4 core</b></div>
+              <div><span>My own brief, after the fixes</span><b>9 of 9</b></div>
             </div>
-            <ul class="checks">
-              <li><label><input type="checkbox" checked><span><b>Put my name on the From line.</b> It only says "Dispatch PM".</span></label></li>
-              <li><label><input type="checkbox" checked><span><b>Move "What happened" above the asks.</b> Problem before fix.</span></label></li>
-              <li><label><input type="checkbox" checked><span><b>Explain "the quick fix"</b> for readers outside Dispatch.</span></label></li>
-              <li><label><input type="checkbox" checked><span><b>Note the untaken-callouts target</b> also depends on the 60s wait, which is out of scope.</span></label></li>
-            </ul>
           </div>
         </div>
       </article>
@@ -833,15 +873,15 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;font-size:12.5px;col
     </div>
 
     <div class="caught">
-      <div class="card reveal" style="--g:var(--g6)"><div class="n">1 of 4</div><h4>My own brief</h4><p>Missing a named owner, with the problem after the asks. Four small fixes, listed in Issue #6.</p></div>
+      <div class="card reveal" style="--g:var(--g6)"><div class="n">1 of 4</div><h4>My own brief</h4><p>Missing a named owner, with the problem after the asks. After the fixes, a re-check passes all 9 checks.</p></div>
       <div class="card reveal" style="--g:var(--g1)"><div class="n">4.1</div><h4>A peer's brief</h4><p>No success measures, contradicted its own replay, and put real-looking names next to responder aliases. That's a possible Security Policy 4.1 problem, so it goes first on the list.</p></div>
       <div class="card reveal" style="--g:var(--g2)"><div class="n">0</div><h4>Deadlines in the strongest peer brief</h4><p>A named owner and an owner for each measure, but no dates, and targets mixed with another fix's effects.</p></div>
     </div>
 
     <div class="prompt-row">
-      <div class="bubble reveal"><div class="who-said"><i></i>How I improved it · Module 6 · #8</div><q>let's improve this skill. add in a step so that it proposes a fix for each check it didn't pass. What other improvements you can think of that will help a PM review other PM's briefs so that they're fit for a wider stakeholder audience?</q></div>
-      <div class="bubble reveal"><div class="who-said"><i></i>How I improved it · Module 6 · #10</div><q>update this skill so that it's provided in a more digestible way, like a checklist format, that users can go through easyily and check off what they've already done</q></div>
+      <div class="bubble reveal"><div class="who-said"><i></i>Tested on my own brief first · Module 6 · #2</div><q>rerun this skill on my module 5 brief and give me an overview</q></div>
       <div class="bubble reveal"><div class="who-said"><i></i>Tested on a peer · Module 6 · #9</div><q>run this on 1 of the other PM's briefs</q></div>
+      <div class="bubble reveal"><div class="who-said"><i></i>Made it easy to act on · Module 6 · #10</div><q>update this skill so that it's provided in a more digestible way, like a checklist format, that users can go through easyily and check off what they've already done</q></div>
     </div>
     <div class="next-up reveal"><b>Next:</b> make it a habit. The weekly Monday run isn't scheduled yet, because the scheduler saves outside the course folder, which the course rules don't allow. I still need to choose between making an exception and a reminder that only lasts for one session.</div>
   </div>
